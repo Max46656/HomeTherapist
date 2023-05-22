@@ -12,11 +12,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->uuid('id')->primary();
+            $table->string('username', 256)->nullable();
+            $table->string('normalized_username', 256)->nullable();
+            $table->string('email', 256)->nullable();
+            $table->string('normalized_email', 256)->nullable();
+            $table->boolean('email_confirmed')->default(false);
+            $table->string('staff_id', 50)->index();
+            $table->unsignedInteger('certificate_number')->nullable()->unique();
+            $table->string('address')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->integer('radius')->unsigned()
+                ->nullable()->default(12);
+            $table->string('password_hash')->nullable();
+            $table->string('password')->nullable();
+            $table->string('security_stamp')->nullable();
+            $table->string('concurrency_stamp')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->boolean('phone_number_confirmed')->default(false);
+            $table->boolean('two_factor_enabled')->default(false);
+            $table->timestamp('lockout_end')->nullable();
+            $table->boolean('lockout_enabled')->default(false);
+            $table->integer('access_failed_count')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });
