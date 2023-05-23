@@ -18,7 +18,9 @@ public partial class Order
 
   public string CustomerAddress { get; set; } = null!;
 
-  public Point CustomerLocation { get; set; } = null!;
+  public decimal Latitude { get; set; }
+
+  public decimal Longitude { get; set; }
 
   public bool IsComplete { get; set; }
 

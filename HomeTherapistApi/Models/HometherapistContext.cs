@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
-
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HomeTherapistApi.Models;
 
-public partial class HometherapistContext : DbContext
+public partial class HometherapistContext : IdentityDbContext<User, Role, ulong>
 {
   private readonly IConfiguration _configuration;
 
@@ -37,21 +37,13 @@ public partial class HometherapistContext : DbContext
 
   public virtual DbSet<Migration> Migrations { get; set; }
 
-  public virtual DbSet<ModelHasPermission> ModelHasPermissions { get; set; }
-
-  public virtual DbSet<ModelHasRole> ModelHasRoles { get; set; }
-
   public virtual DbSet<Order> Orders { get; set; }
 
   public virtual DbSet<OrderDetail> OrderDetails { get; set; }
 
   public virtual DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
-  public virtual DbSet<Permission> Permissions { get; set; }
-
   public virtual DbSet<PersonalAccessToken> PersonalAccessTokens { get; set; }
-
-  public virtual DbSet<Role> Roles { get; set; }
 
   public virtual DbSet<Service> Services { get; set; }
 
@@ -71,11 +63,9 @@ public partial class HometherapistContext : DbContext
         .UseCollation("utf8mb4_general_ci")
         .HasCharSet("utf8mb4");
 
-    base.OnModelCreating(modelBuilder);
-    modelBuilder.Entity<User>().ToTable("Users");
-
-    modelBuilder.Entity<IdentityUser>();
-
+    modelBuilder.Entity<IdentityUserLogin<ulong>>().HasKey(l => new { l.LoginProvider, l.ProviderKey });
+    modelBuilder.Entity<IdentityUserRole<ulong>>().HasKey(r => new { r.UserId, r.RoleId });
+    modelBuilder.Entity<IdentityUserToken<ulong>>().HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
     modelBuilder.Entity<Appointment>(entity =>
     {
       entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -100,7 +90,12 @@ public partial class HometherapistContext : DbContext
       entity.Property(e => e.CustomerId)
               .HasMaxLength(10)
               .HasColumnName("customer_ID");
-      entity.Property(e => e.CustomerLocation).HasColumnName("customer_location");
+      entity.Property(e => e.Longitude)
+  .HasPrecision(10, 7)
+  .HasColumnName("longitude");
+      entity.Property(e => e.Latitude)
+             .HasPrecision(10, 7)
+             .HasColumnName("latitude");
       entity.Property(e => e.CustomerPhone)
               .HasMaxLength(10)
               .HasColumnName("customer_phone");
@@ -341,56 +336,6 @@ public partial class HometherapistContext : DbContext
               .HasColumnName("migration");
     });
 
-    modelBuilder.Entity<ModelHasPermission>(entity =>
-    {
-      entity.HasKey(e => new { e.PermissionId, e.ModelId, e.ModelType })
-              .HasName("PRIMARY")
-              .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0, 0 });
-
-      entity
-              .ToTable("model_has_permissions")
-              .UseCollation("utf8mb4_unicode_ci");
-
-      entity.HasIndex(e => new { e.ModelId, e.ModelType }, "model_has_permissions_model_id_model_type_index");
-
-      entity.Property(e => e.PermissionId)
-              .HasColumnType("bigint(20) unsigned")
-              .HasColumnName("permission_id");
-      entity.Property(e => e.ModelId)
-              .HasColumnType("bigint(20) unsigned")
-              .HasColumnName("model_id");
-      entity.Property(e => e.ModelType).HasColumnName("model_type");
-
-      entity.HasOne(d => d.Permission).WithMany(p => p.ModelHasPermissions)
-              .HasForeignKey(d => d.PermissionId)
-              .HasConstraintName("model_has_permissions_permission_id_foreign");
-    });
-
-    modelBuilder.Entity<ModelHasRole>(entity =>
-    {
-      entity.HasKey(e => new { e.RoleId, e.ModelId, e.ModelType })
-              .HasName("PRIMARY")
-              .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0, 0 });
-
-      entity
-              .ToTable("model_has_roles")
-              .UseCollation("utf8mb4_unicode_ci");
-
-      entity.HasIndex(e => new { e.ModelId, e.ModelType }, "model_has_roles_model_id_model_type_index");
-
-      entity.Property(e => e.RoleId)
-              .HasColumnType("bigint(20) unsigned")
-              .HasColumnName("role_id");
-      entity.Property(e => e.ModelId)
-              .HasColumnType("bigint(20) unsigned")
-              .HasColumnName("model_id");
-      entity.Property(e => e.ModelType).HasColumnName("model_type");
-
-      entity.HasOne(d => d.Role).WithMany(p => p.ModelHasRoles)
-              .HasForeignKey(d => d.RoleId)
-              .HasConstraintName("model_has_roles_role_id_foreign");
-    });
-
     modelBuilder.Entity<Order>(entity =>
     {
       entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -415,7 +360,12 @@ public partial class HometherapistContext : DbContext
       entity.Property(e => e.CustomerId)
               .HasMaxLength(10)
               .HasColumnName("customer_ID");
-      entity.Property(e => e.CustomerLocation).HasColumnName("customer_location");
+      entity.Property(e => e.Longitude)
+        .HasPrecision(10, 7)
+        .HasColumnName("longitude");
+      entity.Property(e => e.Latitude)
+             .HasPrecision(10, 7)
+             .HasColumnName("latitude");
       entity.Property(e => e.CustomerPhone)
               .HasMaxLength(10)
               .HasColumnName("customer_phone");
@@ -500,54 +450,6 @@ public partial class HometherapistContext : DbContext
               .HasColumnName("token");
     });
 
-    modelBuilder.Entity<Permission>(entity =>
-    {
-      entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-      entity
-              .ToTable("permissions")
-              .UseCollation("utf8mb4_unicode_ci");
-
-      entity.HasIndex(e => new { e.Name, e.GuardName }, "permissions_name_guard_name_unique").IsUnique();
-
-      entity.Property(e => e.Id)
-              .HasColumnType("bigint(20) unsigned")
-              .HasColumnName("id");
-      entity.Property(e => e.CreatedAt)
-              .HasColumnType("timestamp")
-              .HasColumnName("created_at");
-      entity.Property(e => e.GuardName).HasColumnName("guard_name");
-      entity.Property(e => e.Name).HasColumnName("name");
-      entity.Property(e => e.UpdatedAt)
-              .HasColumnType("timestamp")
-              .HasColumnName("updated_at");
-
-      entity.HasMany(d => d.Roles).WithMany(p => p.Permissions)
-              .UsingEntity<Dictionary<string, object>>(
-                  "RoleHasPermission",
-                  r => r.HasOne<Role>().WithMany()
-                      .HasForeignKey("RoleId")
-                      .HasConstraintName("role_has_permissions_role_id_foreign"),
-                  l => l.HasOne<Permission>().WithMany()
-                      .HasForeignKey("PermissionId")
-                      .HasConstraintName("role_has_permissions_permission_id_foreign"),
-                  j =>
-                  {
-                    j.HasKey("PermissionId", "RoleId")
-                            .HasName("PRIMARY")
-                            .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
-                    j
-                            .ToTable("role_has_permissions")
-                            .UseCollation("utf8mb4_unicode_ci");
-                    j.HasIndex(new[] { "RoleId" }, "role_has_permissions_role_id_foreign");
-                    j.IndexerProperty<ulong>("PermissionId")
-                            .HasColumnType("bigint(20) unsigned")
-                            .HasColumnName("permission_id");
-                    j.IndexerProperty<ulong>("RoleId")
-                            .HasColumnType("bigint(20) unsigned")
-                            .HasColumnName("role_id");
-                  });
-    });
 
     modelBuilder.Entity<PersonalAccessToken>(entity =>
     {
@@ -586,29 +488,6 @@ public partial class HometherapistContext : DbContext
               .HasColumnType("bigint(20) unsigned")
               .HasColumnName("tokenable_id");
       entity.Property(e => e.TokenableType).HasColumnName("tokenable_type");
-      entity.Property(e => e.UpdatedAt)
-              .HasColumnType("timestamp")
-              .HasColumnName("updated_at");
-    });
-
-    modelBuilder.Entity<Role>(entity =>
-    {
-      entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-      entity
-              .ToTable("roles")
-              .UseCollation("utf8mb4_unicode_ci");
-
-      entity.HasIndex(e => new { e.Name, e.GuardName }, "roles_name_guard_name_unique").IsUnique();
-
-      entity.Property(e => e.Id)
-              .HasColumnType("bigint(20) unsigned")
-              .HasColumnName("id");
-      entity.Property(e => e.CreatedAt)
-              .HasColumnType("timestamp")
-              .HasColumnName("created_at");
-      entity.Property(e => e.GuardName).HasColumnName("guard_name");
-      entity.Property(e => e.Name).HasColumnName("name");
       entity.Property(e => e.UpdatedAt)
               .HasColumnType("timestamp")
               .HasColumnName("updated_at");
@@ -761,7 +640,7 @@ public partial class HometherapistContext : DbContext
         entity.Property(e => e.NormalizedEmail)
                 .HasMaxLength(256)
                 .HasColumnName("normalized_email");
-        entity.Property(e => e.NormalizedUsername)
+        entity.Property(e => e.NormalizedUserName)
                 .HasMaxLength(256)
                 .HasColumnName("normalized_username");
         entity.Property(e => e.PasswordHash)
@@ -788,7 +667,7 @@ public partial class HometherapistContext : DbContext
         entity.Property(e => e.UpdatedAt)
                 .HasColumnType("timestamp")
                 .HasColumnName("updated_at");
-        entity.Property(e => e.Username)
+        entity.Property(e => e.UserName)
                 .HasMaxLength(256)
                 .HasColumnName("username");
       });

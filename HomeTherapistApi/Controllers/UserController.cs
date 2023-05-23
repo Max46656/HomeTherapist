@@ -1,158 +1,78 @@
-using HomeTherapistApi.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.ComponentModel.DataAnnotations;
+using HomeTherapistApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
-namespace HomeTherapistApi.Controllers
+[ApiController]
+[Route("[controller]")]
+public class UserController : ControllerBase
 {
-  [Route("api/[controller]")]
-  [ApiController]
-  public class UsersController : ControllerBase
+  private readonly HometherapistContext _context;
+  private readonly UserManager<User> _userManager;
+
+  public UserController(UserManager<User> userManager, HometherapistContext context)
   {
-    private readonly HometherapistContext _context;
+    _userManager = userManager;
+    _context = context;
+  }
+  [HttpGet]
+  public async Task<IActionResult> Get()
+  {
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-    public UsersController(HometherapistContext context)
+    var user = await _userManager.FindByIdAsync(userId);
+    if (user == null)
     {
-      _context = context;
+      return NotFound();
     }
 
-    // GET: api/Users
-    // [HttpGet]
-    // public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-    // {
-    //   var pageNumber = 1; // 要擷取的分頁號碼
-    //   var pageSize = 100; // 每頁的資料筆數
+    return Ok(user);
+  }
 
-    //   // 計算要跳過的資料筆數
-    //   var skipCount = (pageNumber - 1) * pageSize;
-
-    //   // 使用原生 SQL 查詢取得使用者資料
-    //   var query = $"SELECT *  FROM Users LIMIT {skipCount}, {pageSize};";
-    //   var users = await _context.Users.FromSqlRaw(query).AsNoTracking().ToListAsync();
-
-    //   // 轉換 User objects 為 User objects
-    //   var Users = users.Select(user => new User
-    //   {
-    //     Id = user.Id,
-    //     Name = user.Name,
-    //     Location = user.Location.AsText()
-    //   });
-
-    //   return Ok(Users);
-    // }
-
-
-
-    // GET: api/Users/T0001
-    [HttpGet("{StaffId}")]
-    public async Task<ActionResult<User>> GetUser(string StaffId)
+  [HttpPut]
+  public async Task<IActionResult> Update(User updatedUser)
+  {
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var user = await _userManager.FindByIdAsync(userId);
+    if (user == null)
     {
-      var user = await _context.Users.FindAsync(StaffId);
-
-      if (user == null)
-      {
-        return NotFound();
-      }
-
-      return user;
+      return NotFound();
     }
 
-    // POST: api/Users
-    [HttpPost]
-    public async Task<ActionResult<User>> PostUser(User User)
+    // Update user fields here...
+    user.Email = updatedUser.Email;
+    user.PhoneNumber = updatedUser.PhoneNumber;
+    // ...
+
+    var result = await _userManager.UpdateAsync(user);
+    if (!result.Succeeded)
     {
-
-      _context.Users.Add(User);
-      await _context.SaveChangesAsync();
-
-      return CreatedAtAction(nameof(GetUser), new { id = User.Id }, User);
+      return BadRequest(result.Errors);
     }
 
-    // PUT: api/Users/T0001
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutUser(string StaffId, User user)
-    {
-      if (StaffId != user.StaffId)
-      {
-        return BadRequest();
-      }
+    return NoContent();
+  }
 
-      _context.Entry(user).State = EntityState.Modified;
-      await _context.SaveChangesAsync();
+  [HttpGet("GetOrdersByUser")]
+  public async Task<IActionResult> GetOrdersByUser()
+  {
+    // Get the current user's ID.
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    return Ok(userId);
+    // Get the orders that belong to the current user.
+    var orders = await _context.Orders
+                               .Where(o => o.UserId == userId)
+                               .ToListAsync();
 
-      return NoContent();
-    }
-
-    // DELETE: api/Users/T0001
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteUser(string StaffId)
-    {
-      var user = await _context.Users.FindAsync(StaffId);
-
-      if (user == null)
-      {
-        return NotFound();
-      }
-
-      _context.Users.Remove(user);
-      await _context.SaveChangesAsync();
-
-      return NoContent();
-    }
-
-    [HttpGet("{StaffId}/articles")]
-    public async Task<ActionResult<IEnumerable<IGrouping<DateTime, Article>>>> GetArticleByUserId(string StaffId)
-    {
-      var articles = await _context.Articles
-          .Where(a => a.User.StaffId == StaffId)
-          .ToListAsync();
-
-      if (articles == null)
-      {
-        return NotFound();
-      }
-
-      var articlesByDate = articles
-               .GroupBy(a => a.CreatedAt);
-
-      return Ok(articlesByDate);
-    }
-
-
-    [HttpGet("{StaffId}/appointments")]
-    public async Task<ActionResult<IEnumerable<IGrouping<DateTime, Appointment>>>> GetUserAppointmentsByDate(string StaffId)
-    {
-      var appointments = await _context.Appointments
-       .Where(a => a.User.StaffId == StaffId)
-       .ToListAsync();
-
-      // var appointments = await _context.Users
-      //     .Where(u => u.StaffId == StaffId)
-      //     .SelectMany(u => u.Appointments)
-      //     .ToListAsync();
-
-      if (appointments == null)
-      {
-        return NotFound();
-      }
-
-      var appointmentsByDate = appointments
-          .OrderByDescending(a => a.StartDt)
-          .Select(a => new
-          {
-            a.StartDt,
-            a.CustomerId,
-            a.CustomerPhone,
-            a.CustomerAddress,
-            CustomerLocation = a.CustomerLocation != null ? a.CustomerLocation.AsText() : null,
-            a.IsComplete
-          })
-          .OrderByDescending(a => a.StartDt);
-
-      return Ok(appointmentsByDate);
-    }
+    return Ok(orders);
   }
 }

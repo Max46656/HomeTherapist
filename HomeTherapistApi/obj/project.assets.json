@@ -13055,11 +13055,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
+      "projectUniqueName": "C:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
       "projectName": "HomeTherapistApi",
-      "projectPath": "c:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
+      "projectPath": "C:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
       "packagesPath": "C:\\Users\\maxfr\\.nuget\\packages\\",
-      "outputPath": "c:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\obj\\",
+      "outputPath": "C:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

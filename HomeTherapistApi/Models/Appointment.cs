@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NetTopologySuite.Geometries;
 
 namespace HomeTherapistApi.Models;
 
@@ -9,6 +8,7 @@ public partial class Appointment
   public ulong Id { get; set; }
 
   public string UserId { get; set; } = null!;
+
   public DateTime? StartDt { get; set; }
 
   public string CustomerId { get; set; } = null!;
@@ -17,7 +17,9 @@ public partial class Appointment
 
   public string CustomerAddress { get; set; } = null!;
 
-  public Point CustomerLocation { get; set; } = null!;
+  public decimal Latitude { get; set; }
+
+  public decimal Longitude { get; set; }
 
   public bool IsComplete { get; set; }
 
@@ -26,7 +28,5 @@ public partial class Appointment
   public DateTime? UpdatedAt { get; set; }
   public virtual User User { get; set; } = null!;
   public virtual Calendar Calendar { get; set; } = null!;
-
-  public virtual ICollection<AppointmentDetail> AppointmentDetails
-  { get; set; } = new List<AppointmentDetail>();
+  public virtual ICollection<AppointmentDetail> AppointmentDetails { get; set; } = new List<AppointmentDetail>();
 }

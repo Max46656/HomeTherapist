@@ -1,21 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
-namespace HomeTherapistApi.Models;
-
-public partial class Role
+namespace HomeTherapistApi.Models
 {
-    public ulong Id { get; set; }
-
-    public string Name { get; set; } = null!;
-
-    public string GuardName { get; set; } = null!;
-
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
-
-    public virtual ICollection<ModelHasRole> ModelHasRoles { get; set; } = new List<ModelHasRole>();
-
-    public virtual ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+  public class Role : IdentityRole<ulong>
+  {
+  }
 }
