@@ -50,8 +50,8 @@ public partial class HometherapistContext : IdentityDbContext<User, Role, ulong>
   public virtual DbSet<TherapistOpenService> TherapistOpenServices { get; set; }
 
   public virtual DbSet<TherapistOpenTime> TherapistOpenTimes { get; set; }
+  // public DbSet<User> Users { get; set; }
 
-  public virtual DbSet<User> Users { get; set; }
 
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 

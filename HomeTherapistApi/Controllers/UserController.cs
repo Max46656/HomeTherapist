@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using HomeTherapistApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class UserController : ControllerBase
@@ -31,48 +31,96 @@ public class UserController : ControllerBase
 
     var user = await _userManager.FindByIdAsync(userId);
     if (user == null)
-    {
       return NotFound();
-    }
 
     return Ok(user);
   }
 
-  [HttpPut]
-  public async Task<IActionResult> Update(User updatedUser)
+  // [HttpPut("{id}")]
+  // public async Task<IActionResult> Update(ulong id, User updatedUser)
+  // {
+  //   if (id != updatedUser.Id)
+  //     return BadRequest();
+
+  //   var existingUser = await _context.Users.FindAsync(id);
+  //   if (existingUser == null)
+  //     return NotFound();
+
+  //   existingUser.StaffId = updatedUser.StaffId;
+  //   existingUser.CertificateNumber = updatedUser.CertificateNumber;
+  //   existingUser.Address = updatedUser.Address;
+  //   existingUser.Latitude = updatedUser.Latitude;
+  //   existingUser.Longitude = updatedUser.Longitude;
+  //   existingUser.Radius = updatedUser.Radius;
+  //   existingUser.Username = updatedUser.Username;
+  //   existingUser.NormalizedUsername = updatedUser.Username?.ToUpperInvariant();
+  //   existingUser.Email = updatedUser.Email;
+  //   existingUser.NormalizedEmail = updatedUser.Email?.ToUpperInvariant();
+  //   existingUser.EmailConfirmed = updatedUser.EmailConfirmed;
+  //   existingUser.PasswordHash = updatedUser.PasswordHash;
+  //   existingUser.Password = updatedUser.Password;
+  //   existingUser.SecurityStamp = updatedUser.SecurityStamp;
+  //   existingUser.ConcurrencyStamp = updatedUser.ConcurrencyStamp;
+  //   existingUser.PhoneNumber = updatedUser.PhoneNumber;
+  //   existingUser.PhoneNumberConfirmed = updatedUser.PhoneNumberConfirmed;
+  //   existingUser.TwoFactorEnabled = updatedUser.TwoFactorEnabled;
+  //   existingUser.LockoutEnd = updatedUser.LockoutEnd;
+  //   existingUser.LockoutEnabled = updatedUser.LockoutEnabled;
+  //   existingUser.AccessFailedCount = updatedUser.AccessFailedCount;
+  //   existingUser.RememberToken = updatedUser.RememberToken;
+  //   existingUser.CreatedAt = updatedUser.CreatedAt;
+  //   existingUser.UpdatedAt = updatedUser.UpdatedAt;
+
+  //   await _context.SaveChangesAsync();
+  //   return NoContent();
+  // }
+  [Authorize]
+  [HttpGet("GetAppointmentsByUser")]
+  public IActionResult GetAppointmentsByUser()
   {
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    var user = await _userManager.FindByIdAsync(userId);
-    if (user == null)
-    {
-      return NotFound();
-    }
+    var userId = User.FindFirst("StaffId")?.Value;
+    var appointments = _context.Users
+                                .Where(u => u.StaffId == userId)
+                                .SelectMany(u => u.Appointments)
+                                .ToList();
 
-    // Update user fields here...
-    user.Email = updatedUser.Email;
-    user.PhoneNumber = updatedUser.PhoneNumber;
-    // ...
-
-    var result = await _userManager.UpdateAsync(user);
-    if (!result.Succeeded)
-    {
-      return BadRequest(result.Errors);
-    }
-
-    return NoContent();
+    return Ok(appointments);
   }
+
 
   [HttpGet("GetOrdersByUser")]
   public async Task<IActionResult> GetOrdersByUser()
   {
-    // Get the current user's ID.
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    return Ok(userId);
-    // Get the orders that belong to the current user.
+    var staffId = User.FindFirst("StaffId")?.Value;
+
     var orders = await _context.Orders
-                               .Where(o => o.UserId == userId)
+                               .Where(o => o.UserId == staffId)
                                .ToListAsync();
 
     return Ok(orders);
+  }
+  [Authorize]
+  [HttpGet("GetFeedbacksByUser")]
+  public IActionResult GetFeedbacksByUser()
+  {
+    var staffId = User.FindFirst("StaffId")?.Value;
+    var feedbacks = _context.Users
+                              .Where(u => u.StaffId == staffId)
+                              .SelectMany(u => u.Feedbacks)
+                              .ToList();
+
+    return Ok(feedbacks);
+  }
+  [Authorize]
+  [HttpGet("GetArticlesByUser")]
+  public IActionResult GetArticlesByUser()
+  {
+    var staffId = User.FindFirst("StaffId")?.Value;
+    var articles = _context.Users
+                           .Where(u => u.StaffId == staffId)
+                           .SelectMany(u => u.Articles)
+                           .ToList();
+
+    return Ok(articles);
   }
 }

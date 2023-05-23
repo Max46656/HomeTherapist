@@ -85,11 +85,7 @@ namespace HomeTherapistApi.Controllers
       {
         return BadRequest(result.Errors);
       }
-
-      // 生成 JWT 令牌
       var token = GenerateJwtToken(newUser);
-
-      // 返回成功响应和生成的令牌
       return Ok(new { token });
     }
 
@@ -101,7 +97,8 @@ namespace HomeTherapistApi.Controllers
       var claims = new[]
       {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim("StaffId", user.StaffId)
             };
 
       var token = new JwtSecurityToken(
