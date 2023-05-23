@@ -20,19 +20,19 @@ class User extends Authenticatable
     use CrudTrait;
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $primaryKey = 'staff_id';
-    // protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    // protected $primaryKey = 'staff_id';
+    protected $primaryKey = 'id';
+    // public $incrementing = false;
+    // protected $keyType = 'string';
 
-    protected static function boot()
-    {
-        parent::boot();
+    // protected static function boot()
+    // {
+    //     parent::boot();
 
-        static::creating(function ($model) {
-            $model->{$model->getKeyName()} = Str::uuid()->toString();
-        });
-    }
+    //     static::creating(function ($model) {
+    //         $model->{$model->getKeyName()} = Str::uuid()->toString();
+    //     });
+    // }
 
     /**
      * The attributes that are mass assignable.

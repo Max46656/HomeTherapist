@@ -12,12 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('username', 256)->nullable();
-            $table->string('normalized_username', 256)->nullable();
-            $table->string('email', 256)->nullable();
-            $table->string('normalized_email', 256)->nullable();
-            $table->boolean('email_confirmed')->default(false);
+            $table->id('id');
             $table->string('staff_id', 50)->index();
             $table->unsignedInteger('certificate_number')->nullable()->unique();
             $table->string('address')->nullable();
@@ -25,6 +20,11 @@ return new class extends Migration
             $table->decimal('longitude', 10, 7)->nullable();
             $table->integer('radius')->unsigned()
                 ->nullable()->default(12);
+            $table->string('username', 256)->nullable();
+            $table->string('normalized_username', 256)->nullable();
+            $table->string('email', 256)->nullable();
+            $table->string('normalized_email', 256)->nullable();
+            $table->boolean('email_confirmed')->default(false);
             $table->string('password_hash')->nullable();
             $table->string('password')->nullable();
             $table->string('security_stamp')->nullable();

@@ -19,13 +19,21 @@ class UserFactory extends Factory
     {
 
         return [
-            'id' => Str::uuid(),
+            // 'id' => Str::uuid(),
+            'staff_id' => $this->faker->regexify('T[0-9]{4}'),
+            'certificate_number' => $this->faker->unique()->randomNumber(6),
+            'address' => $this->faker->address,
+            'latitude' => $this->faker->latitude(21.5, 25.5, 7),
+            'longitude' => $this->faker->longitude(120, 122, 7),
+            'radius' => $this->faker->numberBetween(5, 15),
+
             'username' => $username = $this->faker->Name,
-            'normalized_username' => Str::lower($username),
+            'normalized_username' => Str::upper($username),
             'email' => $email = $this->faker->unique()->safeEmail,
-            'normalized_email' => Str::lower($email),
+            'normalized_email' => Str::upper($email),
             'email_confirmed' => $this->faker->boolean,
-            'password_hash' => bcrypt('123456'),
+            'password_hash' => 'AQAAAAIAAYagAAAAEDOIolQQGSI1ELKqdeqAy+vb4qzbx/ckI/T9pBRcTgRwTNG2NqkI+8S8oj8PSn5K6w==',
+            // 'password_hash' => Hash::make('123456'),
             'security_stamp' => Str::random(10),
             'concurrency_stamp' => Str::random(10),
             'phone_number' => $this->faker->phoneNumber,
@@ -35,12 +43,6 @@ class UserFactory extends Factory
             'lockout_enabled' => $this->faker->boolean,
             'access_failed_count' => $this->faker->randomNumber(),
 
-            'staff_id' => $this->faker->regexify('T[0-9]{4}'),
-            'certificate_number' => $this->faker->unique()->randomNumber(6),
-            'address' => $this->faker->address,
-            'latitude' => $this->faker->latitude(21.5, 25.5, 7),
-            'longitude' => $this->faker->longitude(120, 122, 7),
-            'radius' => $this->faker->numberBetween(5, 15),
             'remember_token' => Str::random(10),
             'created_at' => now(),
             'updated_at' => now(),

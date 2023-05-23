@@ -19,11 +19,10 @@ class AdminSeeder extends Seeder
         $adminRole->givePermissionTo($adminPermission);
 
         $adminUser = User::create([
-            'id' => Str::uuid(),
             'username' => $username = 'Admin',
-            'normalized_username' => Str::lower($username),
+            'normalized_username' => Str::upper($username),
             'email' => $email = 'admin@admin.com',
-            'normalized_email' => Str::lower($email),
+            'normalized_email' => Str::upper($email),
             'email_confirmed' => true,
             'password_hash' => Hash::make('123456'),
             'password' => Hash::make('123456'),
