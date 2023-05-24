@@ -11,18 +11,17 @@ namespace HomeTherapistApi.Models;
 
 public partial class HometherapistContext : IdentityDbContext<User, Role, ulong>
 {
-  private readonly IConfiguration _configuration;
-
+  private readonly IConfiguration? _configuration;
   public HometherapistContext()
   {
   }
 
   public HometherapistContext(DbContextOptions<HometherapistContext> options, IConfiguration configuration)
-      : base(options)
-  {
-    _configuration = configuration;
-  }
+      : base(options) =>
+    _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
   // public DbSet<IdentityUser> IdentityUsers { get; set; }
+
   public virtual DbSet<Appointment> Appointments { get; set; }
 
   public virtual DbSet<AppointmentDetail> AppointmentDetails { get; set; }
@@ -55,7 +54,7 @@ public partial class HometherapistContext : IdentityDbContext<User, Role, ulong>
 
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 
-      => optionsBuilder.UseMySql(_configuration.GetConnectionString("DefaultConnection"), ServerVersion.Parse("10.4.27-mariadb"), x => x.UseNetTopologySuite());
+      => optionsBuilder.UseMySql(_configuration!.GetConnectionString("DefaultConnection"), ServerVersion.Parse("10.4.27-mariadb"), x => x.UseNetTopologySuite());
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

@@ -6,7 +6,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace HomeTherapistApi.App_code
+namespace HomeTherapistApi.Filters
 {
   public class AddBearerTokenToSwaggerFilter : IOperationFilter
   {

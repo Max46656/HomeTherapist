@@ -4,17 +4,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace HomeTherapistApi.App_code
+namespace HomeTherapistApi.Filters
 {
   public class AddJwtTokenToSwagger : IOperationFilter
   {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
       // 檢查是否需要 JWT 授權
-      var hasAuthorizeAttribute = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-          .Union(context.MethodInfo.GetCustomAttributes(true))
-          .OfType<AuthorizeAttribute>()
-          .Any();
+      var hasAuthorizeAttribute = context.MethodInfo.DeclaringType?.GetCustomAttributes(true)
+      .Union(context.MethodInfo.GetCustomAttributes(true))
+      .OfType<AuthorizeAttribute>()
+      .Any() ?? false;
 
       if (hasAuthorizeAttribute)
       {

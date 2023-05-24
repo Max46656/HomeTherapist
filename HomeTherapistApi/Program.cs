@@ -13,7 +13,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Swashbuckle.AspNetCore.SwaggerUI;
-using HomeTherapistApi.App_code;
+using HomeTherapistApi.Filters;
+
+#pragma warning disable CS8604
+// C: \Users\maxfr\.nuget\packages\microsoft.
+// net.test.sdk\17.6.0\build\netcoreapp3.1\M
+// icrosoft.NET.Test.Sdk.Program.cs
+// #pragma warning disable CS8604
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,32 +101,34 @@ builder.Services.AddControllers().AddJsonOptions(options =>
   options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
 });
 
+var bearerSecurityScheme = new OpenApiSecurityScheme
+{
+  In = ParameterLocation.Header,
+  Description = "Please insert JWT with Bearer into field",
+  Name = "Authorization",
+  Type = SecuritySchemeType.ApiKey
+};
+
+var securityRequirement = new OpenApiSecurityRequirement
+{
+    {
+        new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference
+            {
+                Type = ReferenceType.SecurityScheme,
+                Id = "Bearer"
+            }
+        },
+        new List<string>()
+    }
+};
+
 builder.Services.AddSwaggerGen(c =>
 {
   c.SwaggerDoc("v1", new OpenApiInfo { Title = "HomeTherapist API", Version = "v1" });
-  // c.OperationFilter<AddJwtTokenToSwagger>();
-  c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-  {
-    In = ParameterLocation.Header,
-    Description = "Please insert JWT with Bearer into field",
-    Name = "Authorization",
-    Type = SecuritySchemeType.ApiKey
-  });
-
-  c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] { }
-        }
-});
+  c.AddSecurityDefinition("Bearer", bearerSecurityScheme);
+  c.AddSecurityRequirement(securityRequirement);
   c.OperationFilter<AddBearerTokenToSwaggerFilter>();
 });
 

@@ -29,6 +29,9 @@ public class UserController : ControllerBase
   {
     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+    if (userId == null)
+      return BadRequest();
+
     var user = await _userManager.FindByIdAsync(userId);
     if (user == null)
       return NotFound();

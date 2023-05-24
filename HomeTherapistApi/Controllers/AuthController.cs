@@ -27,7 +27,6 @@ namespace HomeTherapistApi.Controllers
       _userManager = userManager;
       _signInManager = signInManager;
       _passwordHasher = passwordHasher;
-
     }
     // 測試用Hash密碼生成
     // var passwordHasher = new PasswordHasher<User>();
@@ -35,11 +34,13 @@ namespace HomeTherapistApi.Controllers
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto model)
     {
+      if (model.Email == null || model.Password == null)
+        return BadRequest();
 
       // var user = await _userManager.FindByNameAsync(model.Name);
       var user = await _userManager.FindByEmailAsync(model.Email);
 
-      if (user == null)
+      if (user == null || user.PasswordHash == null)
         return Unauthorized();
 
       var passwordHasher = new PasswordHasher<User>();
@@ -56,13 +57,12 @@ namespace HomeTherapistApi.Controllers
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto model)
     {
-      var existingUser = await _userManager.FindByNameAsync(model.UserName);
-      if (existingUser != null)
-        return BadRequest("Username already exists.");
-      existingUser = await _userManager.FindByEmailAsync(model.Email);
-      if (existingUser != null)
-        return BadRequest("Email already exists.");
+      if (model.UserName == null || model.Email == null || model.StaffId == null || model.Password == null)
+        return BadRequest();
 
+      var existingUser = await _userManager.FindByEmailAsync(model.Email);
+      if (existingUser != null)
+        return BadRequest("Email已被註冊");
 
       var newUser = new User
       {
@@ -91,13 +91,14 @@ namespace HomeTherapistApi.Controllers
 
     private string GenerateJwtToken(User user)
     {
-      var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
+      var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"] ?? throw new InvalidOperationException()));
+
       var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
       var claims = new[]
       {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Email, user.Email?? throw new InvalidOperationException()),
                 new Claim("StaffId", user.StaffId)
             };
 
@@ -105,7 +106,7 @@ namespace HomeTherapistApi.Controllers
           _configuration["JwtSettings:Issuer"],
           _configuration["JwtSettings:Audience"],
           claims,
-          expires: DateTime.UtcNow.AddDays(7),
+          expires: DateTime.UtcNow.AddHours(3),
           signingCredentials: credentials
       );
 
@@ -125,18 +126,18 @@ namespace HomeTherapistApi.Controllers
   {
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Invalid email address")]
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
     [Required(ErrorMessage = "StaffId is required")]
-    public string StaffId { get; set; }
+    public string? StaffId { get; set; }
     [Required(ErrorMessage = "Username is required")]
-    public string UserName { get; set; }
+    public string? UserName { get; set; }
 
     [Required(ErrorMessage = "Password is required")]
     [MinLength(6, ErrorMessage = "Password must be at least 6 characters long")]
-    public string Password { get; set; }
+    public string? Password { get; set; }
 
     [Compare("Password", ErrorMessage = "Passwords do not match")]
-    public string ConfirmPassword { get; set; }
+    public string? ConfirmPassword { get; set; }
   }
 }
