@@ -1,4 +1,5 @@
 using HomeTherapistApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace HomeTherapistApi.Controllers
 {
+  [Authorize]
   [Route("api/[controller]")]
   [ApiController]
   public class ArticlesController : ControllerBase
@@ -20,6 +22,7 @@ namespace HomeTherapistApi.Controllers
     }
 
     // GET: api/Articles
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Article>>> GetArticles()
     {
@@ -27,15 +30,15 @@ namespace HomeTherapistApi.Controllers
     }
 
     // GET: api/Articles/5
+    [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<ActionResult<Article>> GetArticle(ulong id)
     {
       var article = await _context.Articles.FindAsync(id);
 
       if (article == null)
-      {
         return NotFound();
-      }
+
 
       return article;
     }
@@ -58,9 +61,7 @@ namespace HomeTherapistApi.Controllers
     public async Task<IActionResult> PutArticle(ulong id, Article article)
     {
       if (id != article.Id)
-      {
         return BadRequest();
-      }
 
       article.UpdatedAt = DateTime.Now;
 
@@ -73,15 +74,10 @@ namespace HomeTherapistApi.Controllers
       catch (DbUpdateConcurrencyException)
       {
         if (!ArticleExists(id))
-        {
           return NotFound();
-        }
         else
-        {
           throw;
-        }
       }
-
       return NoContent();
     }
 
@@ -92,9 +88,7 @@ namespace HomeTherapistApi.Controllers
       var article = await _context.Articles.FindAsync(id);
 
       if (article == null)
-      {
         return NotFound();
-      }
 
       _context.Articles.Remove(article);
       await _context.SaveChangesAsync();

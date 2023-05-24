@@ -24,6 +24,33 @@ namespace HomeTherapistApi.Controllers
       _context = context;
     }
 
+    [HttpPost]
+    public IActionResult Create([FromBody] AppointmentDto appointmentDto)
+    {
+      if (!ModelState.IsValid)
+        return BadRequest(ModelState);
+
+      var appointment = new Appointment
+      {
+        UserId = appointmentDto.UserId,
+        StartDt = appointmentDto.StartDt,
+        CustomerId = appointmentDto.CustomerId,
+        CustomerPhone = appointmentDto.CustomerPhone,
+        CustomerAddress = appointmentDto.CustomerAddress,
+        Latitude = appointmentDto.Latitude,
+        Longitude = appointmentDto.Longitude,
+
+        IsComplete = false,
+        CreatedAt = DateTime.Now
+      };
+
+      _context.Appointments.Add(appointment);
+      _context.SaveChanges();
+
+      return Ok(appointment);
+    }
+
+
     [HttpGet("{IdNumber}")]
     public async Task<IActionResult> Get(string IdNumber, string Phone)
     {
@@ -43,11 +70,11 @@ namespace HomeTherapistApi.Controllers
       if (appointment == null)
         return NotFound();
 
-      appointment.CustomerAddress = updatedAppointment.CustomerAddress;
       appointment.CustomerId = updatedAppointment.CustomerId;
+      appointment.CustomerPhone = updatedAppointment.CustomerPhone;
+      appointment.CustomerAddress = updatedAppointment.CustomerAddress;
       appointment.Longitude = updatedAppointment.Longitude;
       appointment.Latitude = updatedAppointment.Latitude;
-      appointment.CustomerPhone = updatedAppointment.CustomerPhone;
       appointment.StartDt = updatedAppointment.StartDt;
 
       await _context.SaveChangesAsync();
@@ -62,6 +89,28 @@ namespace HomeTherapistApi.Controllers
 
       return Ok(AppointmentDetails);
     }
+  }
+  public class AppointmentDto
+  {
+    [Required]
+    public string UserId { get; set; } = null!;
+
+    [Required]
+    public DateTime StartDt { get; set; }
+    [Required]
+    public string? CustomerId { get; set; }
+
+    [Required]
+    public string? CustomerPhone { get; set; }
+
+    [Required]
+    public string? CustomerAddress { get; set; }
+
+    [Required]
+    public decimal Latitude { get; set; }
+
+    [Required]
+    public decimal Longitude { get; set; }
   }
 
 }

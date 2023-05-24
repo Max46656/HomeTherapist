@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "o8snt9Hq8KPzT6Ko/q3sXNSzY4L9flh+1oatQUC/BCNyxmtdQFJhASGGLwYpLKSCQlOS6SykeAsXbGFJPeFO/g==",
+  "dgSpecHash": "Dk1TXot6xSU6NYxt8NjuZeYsb3LuCSHFrHS2q+BxOCi6bD2Rsvvx4yfGDVg8Wb3k5YZojnbYaC+V0c/REHcNTA==",
   "success": true,
-  "projectFilePath": "C:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
+  "projectFilePath": "c:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\maxfr\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\maxfr\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",

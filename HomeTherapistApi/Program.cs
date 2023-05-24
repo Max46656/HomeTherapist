@@ -153,8 +153,8 @@ app.UseRouting();
 app.UseHttpsRedirection();
 
 // Required for Authentication.
-app.UseAuthentication();
-app.UseAuthorization();
+// app.UseAuthentication();
+// app.UseAuthorization();
 
 app.MapControllers();
 
