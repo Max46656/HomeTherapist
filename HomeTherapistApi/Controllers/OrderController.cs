@@ -26,12 +26,12 @@ namespace HomeTherapistApi.Controllers
       _context = context;
     }
 
-    // [HttpGet]
-    // public async Task<IActionResult> Get()
-    // {
-    //   var orders = await _context.Orders.ToListAsync();
-    //   return Ok(orders);
-    // }
+    [HttpGet]
+    public async Task<IActionResult> Get()
+    {
+      var orders = await _context.Orders.ToListAsync();
+      return Ok(orders);
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(ulong id)

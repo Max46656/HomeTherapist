@@ -746,3 +746,6 @@ c:\xampp8.2.0\htdocs\HomeTherapist\HomeTherapistApi\obj\Debug\net7.0\refint\Home
 c:\xampp8.2.0\htdocs\HomeTherapist\HomeTherapistApi\obj\Debug\net7.0\HomeTherapistApi.pdb
 c:\xampp8.2.0\htdocs\HomeTherapist\HomeTherapistApi\obj\Debug\net7.0\HomeTherapistApi.genruntimeconfig.cache
 c:\xampp8.2.0\htdocs\HomeTherapist\HomeTherapistApi\obj\Debug\net7.0\ref\HomeTherapistApi.dll
+C:\xampp8.2.0\htdocs\HomeTherapist\HomeTherapistApi\bin\Debug\net7.0\Microsoft.AspNetCore.JsonPatch.dll
+C:\xampp8.2.0\htdocs\HomeTherapist\HomeTherapistApi\bin\Debug\net7.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+C:\xampp8.2.0\htdocs\HomeTherapist\HomeTherapistApi\bin\Debug\net7.0\Newtonsoft.Json.Bson.dll

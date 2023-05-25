@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using HomeTherapistApi.Filters;
+using HomeTherapistApi.Services;
+using Newtonsoft.Json;
 
 #pragma warning disable CS8604
 // C: \Users\maxfr\.nuget\packages\microsoft.
@@ -36,6 +38,7 @@ builder.Services.AddDbContext<HometherapistContext>(options =>
   // options.LogTo(Console.WriteLine);
 });
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
 builder.Services.AddIdentity<User, Role>(options =>
 {
@@ -95,11 +98,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // Add services to the container.
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-  options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-  options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
-});
+builder.Services.AddControllers()
+    .AddNewtonsoftJson(options =>
+    {
+      options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
+      options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
+      options.SerializerSettings.FloatParseHandling = FloatParseHandling.Double;
+    });
+
 
 var bearerSecurityScheme = new OpenApiSecurityScheme
 {
@@ -153,10 +159,13 @@ app.UseRouting();
 app.UseHttpsRedirection();
 
 // Required for Authentication.
-// app.UseAuthentication();
-// app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+        {
+          endpoints.MapControllers();
+        });
 
 // Run the application.
 app.Run();

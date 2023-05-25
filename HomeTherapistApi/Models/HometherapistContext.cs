@@ -20,8 +20,6 @@ public partial class HometherapistContext : IdentityDbContext<User, Role, ulong>
       : base(options) =>
     _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-  // public DbSet<IdentityUser> IdentityUsers { get; set; }
-
   public virtual DbSet<Appointment> Appointments { get; set; }
 
   public virtual DbSet<AppointmentDetail> AppointmentDetails { get; set; }

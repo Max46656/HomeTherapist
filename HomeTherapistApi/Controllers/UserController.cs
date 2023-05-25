@@ -77,7 +77,6 @@ public class UserController : ControllerBase
   //   await _context.SaveChangesAsync();
   //   return NoContent();
   // }
-  [Authorize]
   [HttpGet("GetAppointmentsByUser")]
   public IActionResult GetAppointmentsByUser()
   {
@@ -102,7 +101,6 @@ public class UserController : ControllerBase
 
     return Ok(orders);
   }
-  [Authorize]
   [HttpGet("GetFeedbacksByUser")]
   public IActionResult GetFeedbacksByUser()
   {
@@ -114,7 +112,6 @@ public class UserController : ControllerBase
 
     return Ok(feedbacks);
   }
-  [Authorize]
   [HttpGet("GetArticlesByUser")]
   public IActionResult GetArticlesByUser()
   {
