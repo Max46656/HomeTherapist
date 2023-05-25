@@ -20,11 +20,11 @@ class UserFactory extends Factory
 
         return [
             // 'id' => Str::uuid(),
-            'staff_id' => $this->faker->regexify('T[0-9]{4}'),
+            'staff_id' => $this->faker->unique()->regexify('T[0-9]{4}'),
             'certificate_number' => $this->faker->unique()->randomNumber(6),
             'address' => $this->faker->address,
-            'latitude' => $this->faker->latitude(21.5, 25.5, 7),
-            'longitude' => $this->faker->longitude(120, 122, 7),
+            'latitude' => $this->faker->latitude(24.7, 25.3, 7),
+            'longitude' => $this->faker->longitude(121.25, 121.8, 7),
             'radius' => $this->faker->numberBetween(5, 15),
 
             'username' => $username = $this->faker->Name,
