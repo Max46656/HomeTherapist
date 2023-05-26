@@ -21,14 +21,31 @@ namespace HomeTherapistApi.Controllers
       _context = context;
     }
 
-    // GET: api/Articles
-    [AllowAnonymous]
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Article>>> GetArticles()
-    {
-      return await _context.Articles.ToListAsync();
-    }
+    // // GET: api/Articles
+    // [AllowAnonymous]
+    // [HttpGet]
+    // public async Task<ActionResult<IEnumerable<Article>>> GetArticles()
+    // {
+    //   return await _context.Articles.ToListAsync();
+    // }
 
+    // GET: api/Articles
+    [Authorize]
+    [HttpGet]
+    public async Task<ActionResult<Article>> GetArticleByUser()
+    {
+      var userId = User.FindFirst("StaffId")?.Value;
+      if (userId == null) return BadRequest();
+
+      var articles = await _context.Articles
+         .Where(a => a.UserId == userId)
+         .ToListAsync();
+
+      if (articles == null)
+        return NotFound();
+
+      return Ok(articles);
+    }
     // GET: api/Articles/5
     [AllowAnonymous]
     [HttpGet("{id}")]
@@ -44,28 +61,50 @@ namespace HomeTherapistApi.Controllers
     }
 
     // POST: api/Articles
+    [Authorize]
     [HttpPost]
-    public async Task<ActionResult<Article>> PostArticle(Article article)
+    public ActionResult<Article> PostArticle(ArticleDto _article)
     {
-      article.CreatedAt = DateTime.Now;
-      article.UpdatedAt = DateTime.Now;
+      var userId = User.FindFirst("StaffId")?.Value;
+      if (userId == null) return BadRequest("尚未登入");
+
+      var user = _context.Users.FirstOrDefault(u => u.StaffId == userId);
+      if (user == null) return BadRequest("使用者錯誤");
+
+      var article = new Article
+      {
+        UserId = userId,
+        Title = _article.Title,
+        Subtitle = _article.Subtitle,
+        Body = _article.Body,
+        User = user,
+        CreatedAt = DateTime.Now,
+        UpdatedAt = DateTime.Now
+      };
 
       _context.Articles.Add(article);
-      await _context.SaveChangesAsync();
+      _context.SaveChanges();
 
-      return CreatedAtAction(nameof(GetArticle), new { id = article.Id }, article);
+      return CreatedAtAction(nameof(GetArticle), new
+      {
+        id = article.Id
+      }, article);
     }
 
     // PUT: api/Articles/5
+    [Authorize]
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutArticle(ulong id, Article article)
+    public async Task<IActionResult> PutArticle(ulong id, ArticleDto _article)
     {
-      if (id != article.Id)
-        return BadRequest();
+      var userId = User.FindFirst("StaffId")?.Value;
+      if (userId == null || userId != _article.UserId) return BadRequest("使用者錯誤");
+
+      var article = await _context.Articles.FindAsync(id);
+      if (article == null) return NotFound();
 
       article.UpdatedAt = DateTime.Now;
 
-      _context.Entry(article).State = EntityState.Modified;
+      _context.Entry(article).CurrentValues.SetValues(_article);
 
       try
       {
@@ -74,7 +113,7 @@ namespace HomeTherapistApi.Controllers
       catch (DbUpdateConcurrencyException)
       {
         if (!ArticleExists(id))
-          return NotFound();
+          return NotFound("該文章不存在。");
         else
           throw;
       }
@@ -86,10 +125,9 @@ namespace HomeTherapistApi.Controllers
     public async Task<IActionResult> DeleteArticle(ulong id)
     {
       var article = await _context.Articles.FindAsync(id);
-
-      if (article == null)
-        return NotFound();
-
+      var userId = User.FindFirst("StaffId")?.Value;
+      if (article == null) return NotFound();
+      if (userId == null || userId != article.UserId) return BadRequest();
       _context.Articles.Remove(article);
       await _context.SaveChangesAsync();
 
@@ -100,5 +138,19 @@ namespace HomeTherapistApi.Controllers
     {
       return _context.Articles.Any(e => e.Id == id);
     }
+  }
+  public class ArticleDto
+  {
+    public string UserId { get; set; } = null!;
+
+    public string Title { get; set; } = null!;
+
+    public string? Subtitle { get; set; }
+
+    public string Body { get; set; } = null!;
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
   }
 }

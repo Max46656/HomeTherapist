@@ -27,20 +27,16 @@ namespace HomeTherapistApi.Controllers
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TherapistOpenService>>> GetTherapistOpenServices()
     {
-      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+      var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null) return BadRequest();
 
       return await _context.TherapistOpenServices
           .Where(t => t.UserId == userId)
           .ToListAsync();
     }
-    // {
-    //   "UserId": "T5106",
-    //   "ServiceId": "1"
-    // }
     // POST: api/TherapistOpenService
     [HttpPost]
-    public async Task<ActionResult<TherapistOpenService>> PostTherapistOpenService(TherapistOpenServiceDto therapistOpenServiceDto)
+    public async Task<ActionResult<TherapistOpenService>> AddTherapistOpenService(ulong ServiceId)
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null) return BadRequest();
@@ -48,21 +44,31 @@ namespace HomeTherapistApi.Controllers
       var user = await _context.Users.SingleOrDefaultAsync(u => u.StaffId == userId);
       if (user == null) return BadRequest("使用者錯誤。");
 
-      var service = await _context.Services.SingleOrDefaultAsync(s => s.Id == therapistOpenServiceDto.ServiceId);
+      var service = await _context.Services.SingleOrDefaultAsync(s => s.Id == ServiceId);
       if (service == null) return BadRequest("服務ID錯誤。");
+
+      var existingService = await _context.TherapistOpenServices
+         .FirstOrDefaultAsync(s => s.ServiceId == ServiceId && s.UserId == userId);
+      if (existingService != null)
+        return Conflict("已啟用該服務。");
 
       var therapistOpenService = new TherapistOpenService
       {
         UserId = userId,
-        ServiceId = (ulong)therapistOpenServiceDto.ServiceId,
+        ServiceId = ServiceId,
         User = user,
-        Service = service
+        Service = service,
+        CreatedAt = DateTime.Now,
+        UpdatedAt = DateTime.Now
       };
 
       _context.TherapistOpenServices.Add(therapistOpenService);
       await _context.SaveChangesAsync();
 
-      return CreatedAtAction(nameof(GetTherapistOpenServices), new { id = therapistOpenService.Id }, therapistOpenService);
+      return CreatedAtAction(nameof(GetTherapistOpenServices), new
+      {
+        id = therapistOpenService.Id
+      }, therapistOpenService);
     }
 
     // DELETE: api/TherapistOpenService/5
@@ -93,5 +99,7 @@ namespace HomeTherapistApi.Controllers
     public ulong? ServiceId { get; set; }
     public User? User { get; set; } = null!;
     public Service? Service { get; set; } = null!;
+    public DateTime? CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
   }
 }

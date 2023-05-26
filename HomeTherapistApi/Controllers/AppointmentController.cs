@@ -6,6 +6,7 @@ using HomeTherapistApi.Services;
 
 namespace HomeTherapistApi.Controllers
 {
+  // 面向預約者
   [ApiController]
   [Route("[controller]")]
   public class AppointmentController : ControllerBase

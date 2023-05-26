@@ -27,7 +27,7 @@ namespace HomeTherapistApi.Controllers
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TherapistOpenTime>>> GetTherapistOpenTimes()
     {
-      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+      var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null) return BadRequest();
 
       return await _context.TherapistOpenTimes
@@ -40,7 +40,7 @@ namespace HomeTherapistApi.Controllers
     // }
     // POST: api/TherapistOpenTime
     [HttpPost]
-    public async Task<ActionResult<TherapistOpenTime>> PostTherapistOpenTime(TherapistOpenTimeDto therapistOpenTimeDto)
+    public async Task<ActionResult<TherapistOpenTime>> PostTherapistOpenTime(DateTime? dateTime)
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null) return BadRequest();
@@ -50,16 +50,23 @@ namespace HomeTherapistApi.Controllers
       if (user == null) return BadRequest("使用者錯誤。");
 
       // 根據 StartDt 查詢相應的 Calendar 物件
-      var calendar = await _context.Calendars.SingleOrDefaultAsync(c => c.Dt == therapistOpenTimeDto.StartDt);
+      var calendar = await _context.Calendars.SingleOrDefaultAsync(c => c.Dt == dateTime);
       if (calendar == null) return BadRequest("可設定時間以10分鐘為刻度。");
+
+      var existingOpenTime = await _context.TherapistOpenTimes
+         .FirstOrDefaultAsync(s => s.StartDt == dateTime && s.UserId == userId);
+      if (existingOpenTime != null)
+        return Conflict("已啟用該時間。");
 
       // 建立 TherapistOpenTime 物件並設定屬性值
       var therapistOpenTime = new TherapistOpenTime
       {
         UserId = userId,
-        StartDt = therapistOpenTimeDto.StartDt,
+        StartDt = dateTime,
         User = user,
-        Calendar = calendar
+        Calendar = calendar,
+        CreatedAt = DateTime.Now,
+        UpdatedAt = DateTime.Now
       };
 
       _context.TherapistOpenTimes.Add(therapistOpenTime);
@@ -69,16 +76,16 @@ namespace HomeTherapistApi.Controllers
     }
     // DELETE: api/TherapistOpenTime/5
     [HttpDelete]
-    public async Task<IActionResult> DeleteTherapistOpenTime(DateTime? date)
+    public async Task<IActionResult> DeleteTherapistOpenTime(DateTime? dateTime)
     {
-      if (date == null)
-        return BadRequest("需要輸入欲刪除日期。");
+      if (dateTime == null)
+        return BadRequest("需要輸入欲刪除日期與時間。");
 
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null) return BadRequest();
 
       var therapistOpenTime = await _context.TherapistOpenTimes
-      .FirstOrDefaultAsync(a => a.UserId == userId && a.StartDt == date!.Value);
+      .FirstOrDefaultAsync(a => a.UserId == userId && a.StartDt == dateTime!.Value);
 
       if (therapistOpenTime == null)
         return NotFound();
@@ -95,5 +102,7 @@ namespace HomeTherapistApi.Controllers
     public DateTime? StartDt { get; set; }
     public User? User { get; set; } = null!;
     public Calendar? Calendar { get; set; } = null!;
+    public DateTime? CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
   }
 }
