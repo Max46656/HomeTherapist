@@ -6,7 +6,6 @@ use App\Models\Calendar;
 use App\Models\TherapistOpenTime;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class TherapistOpenTimeSeeder extends Seeder
 {
@@ -15,7 +14,6 @@ class TherapistOpenTimeSeeder extends Seeder
      */
     public function run(): void
     {
-
 
         $users = User::all()->pluck('staff_id')->toArray();
         $calendars = Calendar::whereTime('dt', '>=', '08:00:00')
@@ -33,7 +31,7 @@ class TherapistOpenTimeSeeder extends Seeder
         for ($i = 0; $i < $totalBatches; $i++) {
             $data = TherapistOpenTime::factory()->count($batchSize)->make()->toArray();
             TherapistOpenTime::insert($data);
-            sleep(0.1);
+            sleep(0.05);
         }
     }
 }

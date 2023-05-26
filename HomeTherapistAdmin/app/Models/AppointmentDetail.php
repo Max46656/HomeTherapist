@@ -5,6 +5,7 @@ namespace App\Models;
 use Backpack\CRUD\app\Models\Traits\CrudTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AppointmentDetail extends Model
 {
@@ -13,6 +14,6 @@ class AppointmentDetail extends Model
 
     public function appointment(): BelongsTo
     {
-        return $this->belongsTo(Order::class, 'user_id', 'staff_ID');
+        return $this->belongsTo(Appointment::class);
     }
 }

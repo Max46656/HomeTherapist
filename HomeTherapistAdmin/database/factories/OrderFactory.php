@@ -29,6 +29,8 @@ class OrderFactory extends Factory
             'customer_address' => $this->faker->address,
             'latitude' => $this->faker->latitude(21.5, 25.5, 7),
             'longitude' => $this->faker->longitude(120, 122, 7),
+            'gender' => $this->faker->randomElement(['男', '女', '其他']),
+            'age_group' => $this->faker->randomElement(['小於18', '18-25', '26-35', '36-45', '46-55', '56-65', '66-75', '大於75']),
             'is_complete' => true,
         ];
     }

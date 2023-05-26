@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // $faker = FakerFactory::create('zh_TW');
+        // $this->app->singleton(\Faker\Generator::class, function () use ($faker) {
+        //     return $faker;
+        // });
     }
 }
