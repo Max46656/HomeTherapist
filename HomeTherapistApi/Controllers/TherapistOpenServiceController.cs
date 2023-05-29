@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using HomeTherapistApi.Models;
+using HomeTherapistApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -25,37 +26,48 @@ namespace HomeTherapistApi.Controllers
 
     // GET: api/TherapistOpenService
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TherapistOpenService>>> GetTherapistOpenServices()
+    public async Task<IActionResult> GetTherapistOpenServices()
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
+      if (userId == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無法取得使用者資訊" });
 
-      return await _context.TherapistOpenServices
+      var services = await _context.TherapistOpenServices
           .Where(t => t.UserId == userId)
           .ToListAsync();
+
+      return Ok(new ApiResponse<List<TherapistOpenService>>
+      {
+        IsSuccess = true,
+        Message = "取得治療師開放服務成功",
+        Data = services
+      });
     }
-    // POST: api/TherapistOpenService
+
     [HttpPost]
-    public async Task<ActionResult<TherapistOpenService>> AddTherapistOpenService(ulong ServiceId)
+    public async Task<IActionResult> AddTherapistOpenService(ulong serviceId)
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
+      if (userId == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無法取得使用者資訊" });
 
       var user = await _context.Users.SingleOrDefaultAsync(u => u.StaffId == userId);
-      if (user == null) return BadRequest("使用者錯誤。");
+      if (user == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "使用者不存在" });
 
-      var service = await _context.Services.SingleOrDefaultAsync(s => s.Id == ServiceId);
-      if (service == null) return BadRequest("服務ID錯誤。");
+      var service = await _context.Services.SingleOrDefaultAsync(s => s.Id == serviceId);
+      if (service == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "服務不存在" });
 
       var existingService = await _context.TherapistOpenServices
-         .FirstOrDefaultAsync(s => s.ServiceId == ServiceId && s.UserId == userId);
+          .FirstOrDefaultAsync(s => s.ServiceId == serviceId && s.UserId == userId);
       if (existingService != null)
-        return Conflict("已啟用該服務。");
+        return Conflict(new ApiResponse<object> { IsSuccess = false, Message = "已啟用該服務" });
 
       var therapistOpenService = new TherapistOpenService
       {
         UserId = userId,
-        ServiceId = ServiceId,
+        ServiceId = serviceId,
         User = user,
         Service = service,
         CreatedAt = DateTime.Now,
@@ -68,24 +80,29 @@ namespace HomeTherapistApi.Controllers
       return CreatedAtAction(nameof(GetTherapistOpenServices), new
       {
         id = therapistOpenService.Id
-      }, therapistOpenService);
+      }, new ApiResponse<TherapistOpenService>
+      {
+        IsSuccess = true,
+        Message = "新增治療師開放服務成功",
+        Data = therapistOpenService
+      });
     }
 
-    // DELETE: api/TherapistOpenService/5
     [HttpDelete]
     public async Task<IActionResult> DeleteTherapistOpenService(ulong? serviceId)
     {
       if (serviceId == null)
-        return BadRequest("需要輸入欲刪除服務ID。");
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供欲刪除的服務ID" });
 
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
+      if (userId == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無法取得使用者資訊" });
 
       var therapistOpenService = await _context.TherapistOpenServices
-      .FirstOrDefaultAsync(a => a.UserId == userId && a.ServiceId == serviceId);
+          .FirstOrDefaultAsync(a => a.UserId == userId && a.ServiceId == serviceId);
 
       if (therapistOpenService == null)
-        return NotFound();
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到指定的治療師開放服務" });
 
       _context.TherapistOpenServices.Remove(therapistOpenService);
       await _context.SaveChangesAsync();

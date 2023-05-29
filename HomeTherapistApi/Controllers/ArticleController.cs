@@ -1,4 +1,5 @@
 using HomeTherapistApi.Models;
+using HomeTherapistApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,55 +22,62 @@ namespace HomeTherapistApi.Controllers
       _context = context;
     }
 
-    // // GET: api/Articles
-    // [AllowAnonymous]
-    // [HttpGet]
-    // public async Task<ActionResult<IEnumerable<Article>>> GetArticles()
-    // {
-    //   return await _context.Articles.ToListAsync();
-    // }
-
+    // GET: api/Articles
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Article>>> GetAllArticles()
+    {
+      return Ok(new ApiResponse<IEnumerable<Article>>
+      {
+        IsSuccess = true,
+        Message = "查詢所有文章完成",
+        Data = await _context.Articles.ToListAsync()
+      });
+      // return await _context.Articles.ToListAsync();
+    }
     // GET: api/Articles
     [Authorize]
-    [HttpGet]
-    public async Task<ActionResult<Article>> GetArticleByUser()
+    [HttpGet("ByUser")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<Article>>>> GetArticleByUser()
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
+      if (userId == null)
+        return BadRequest(new ApiResponse<IEnumerable<Article>> { IsSuccess = false, Message = "尚未登入" });
 
       var articles = await _context.Articles
          .Where(a => a.UserId == userId)
          .ToListAsync();
 
       if (articles == null)
-        return NotFound();
+        return NotFound(new ApiResponse<IEnumerable<Article>> { IsSuccess = false, Message = "查無文章" });
 
-      return Ok(articles);
+      return Ok(new ApiResponse<IEnumerable<Article>> { IsSuccess = true, Message = "查詢用戶文章完成", Data = articles });
     }
     // GET: api/Articles/5
     [AllowAnonymous]
     [HttpGet("{id}")]
-    public async Task<ActionResult<Article>> GetArticle(ulong id)
+    public async Task<ActionResult<ApiResponse<Article>>> GetArticle(ulong id)
     {
       var article = await _context.Articles.FindAsync(id);
 
       if (article == null)
-        return NotFound();
+        return NotFound(new ApiResponse<Article> { IsSuccess = false, Message = "查無文章" });
 
-
-      return article;
+      return Ok(new ApiResponse<Article> { IsSuccess = true, Message = "查詢文章完成", Data = article });
     }
 
     // POST: api/Articles
     [Authorize]
     [HttpPost]
-    public ActionResult<Article> PostArticle(ArticleDto _article)
+    public ActionResult<ApiResponse<Article>> Create(InputArticleDto _article)
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest("尚未登入");
+      if (userId == null)
+        return BadRequest(new ApiResponse<Article> { IsSuccess = false, Message = "尚未登入" });
 
       var user = _context.Users.FirstOrDefault(u => u.StaffId == userId);
-      if (user == null) return BadRequest("使用者錯誤");
+      if (user == null)
+        return BadRequest(new ApiResponse<Article> { IsSuccess = false, Message = "使用者錯誤" });
 
       var article = new Article
       {
@@ -85,25 +93,23 @@ namespace HomeTherapistApi.Controllers
       _context.Articles.Add(article);
       _context.SaveChanges();
 
-      return CreatedAtAction(nameof(GetArticle), new
-      {
-        id = article.Id
-      }, article);
+      return CreatedAtAction(nameof(GetArticle), new { id = article.Id }, new ApiResponse<Article> { IsSuccess = true, Message = "新增文章完成", Data = article });
     }
 
     // PUT: api/Articles/5
     [Authorize]
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutArticle(ulong id, ArticleDto _article)
+    public async Task<ActionResult<ApiResponse<Article>>> Update(ulong id, ArticleDto _article)
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null || userId != _article.UserId) return BadRequest("使用者錯誤");
+      if (userId == null || userId != _article.UserId)
+        return BadRequest(new ApiResponse<Article> { IsSuccess = false, Message = "使用者錯誤" });
 
       var article = await _context.Articles.FindAsync(id);
-      if (article == null) return NotFound();
+      if (article == null)
+        return NotFound(new ApiResponse<Article> { IsSuccess = false, Message = "該文章不存在" });
 
       article.UpdatedAt = DateTime.Now;
-
       _context.Entry(article).CurrentValues.SetValues(_article);
 
       try
@@ -113,31 +119,43 @@ namespace HomeTherapistApi.Controllers
       catch (DbUpdateConcurrencyException)
       {
         if (!ArticleExists(id))
-          return NotFound("該文章不存在。");
+          return NotFound(new ApiResponse<Article> { IsSuccess = false, Message = "該文章不存在" });
         else
           throw;
       }
-      return NoContent();
+
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "更新文章成功", Data = article });
     }
 
-    // DELETE: api/Articles/5
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteArticle(ulong id)
+    public async Task<ActionResult<ApiResponse<object>>> DeleteArticle(ulong id)
     {
       var article = await _context.Articles.FindAsync(id);
       var userId = User.FindFirst("StaffId")?.Value;
-      if (article == null) return NotFound();
-      if (userId == null || userId != article.UserId) return BadRequest();
+      if (article == null) return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "該文章不存在" });
+      if (userId == null || userId != article.UserId) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "使用者錯誤" });
+
       _context.Articles.Remove(article);
       await _context.SaveChangesAsync();
 
-      return NoContent();
+      return Ok(new ApiResponse<object>
+      { IsSuccess = true, Message = "刪除文章成功" });
     }
+
 
     private bool ArticleExists(ulong id)
     {
       return _context.Articles.Any(e => e.Id == id);
     }
+  }
+  public class InputArticleDto
+  {
+
+    public string Title { get; set; } = null!;
+
+    public string? Subtitle { get; set; }
+
+    public string Body { get; set; } = null!;
   }
   public class ArticleDto
   {

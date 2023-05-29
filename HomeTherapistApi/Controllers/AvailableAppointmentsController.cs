@@ -63,6 +63,34 @@ namespace HomeTherapistApi.Controllers
         return Ok(new ApiResponse<string> { IsSuccess = false, Message = ex.Message });
       }
     }
+    [HttpPost]
+    [Route("createAppointment")]
+    public async Task<IActionResult> CreateAppointmentAsync([FromBody] AppointmentInputDto appointmentInputDto)
+    {
+      try
+      {
+        var appointmentDto = new AppointmentDto
+        {
+          ServiceId = appointmentInputDto.ServiceId,
+          CustomerId = appointmentInputDto.CustomerId,
+          CustomerPhone = appointmentInputDto.CustomerPhone,
+          CustomerAddress = appointmentInputDto.CustomerAddress,
+          Note = appointmentInputDto.Note,
+          UserId = await GetRandomTherapistId(appointmentInputDto.SelectedDate, appointmentInputDto.Latitude, appointmentInputDto.Longitude),
+          Price = (double)(_context.Services.FirstOrDefault(a => a.Id == appointmentInputDto.ServiceId)?.Price!),
+          StartDt = appointmentInputDto.SelectedDate,
+          Latitude = (decimal)appointmentInputDto.Latitude!,
+          Longitude = (decimal)appointmentInputDto.Longitude!
+        };
+
+        var appointment = _appointmentService.CreateAppointmentWithDetail(appointmentDto);
+        return Ok(new ApiResponse<Appointment> { IsSuccess = true, Data = appointment });
+      }
+      catch (ArgumentException ex)
+      {
+        return Ok(new ApiResponse<string> { IsSuccess = false, Message = ex.Message });
+      }
+    }
 
     private async Task<List<DateTime>> GetAvailableDatetimesForTherapists(List<User> therapistsInRange, DateTime date)
     {
@@ -109,36 +137,6 @@ namespace HomeTherapistApi.Controllers
       }
 
       return availableDatetimes;
-    }
-
-
-    [HttpPost]
-    [Route("createAppointment")]
-    public async Task<IActionResult> CreateAppointmentAsync([FromBody] AppointmentInputDto appointmentInputDto)
-    {
-      try
-      {
-        var appointmentDto = new AppointmentDto
-        {
-          ServiceId = appointmentInputDto.ServiceId,
-          CustomerId = appointmentInputDto.CustomerId,
-          CustomerPhone = appointmentInputDto.CustomerPhone,
-          CustomerAddress = appointmentInputDto.CustomerAddress,
-          Note = appointmentInputDto.Note,
-          UserId = await GetRandomTherapistId(appointmentInputDto.SelectedDate, appointmentInputDto.Latitude, appointmentInputDto.Longitude),
-          Price = (double)(_context.Services.FirstOrDefault(a => a.Id == appointmentInputDto.ServiceId)?.Price!),
-          StartDt = appointmentInputDto.SelectedDate,
-          Latitude = (decimal)appointmentInputDto.Latitude!,
-          Longitude = (decimal)appointmentInputDto.Longitude!
-        };
-
-        var appointment = _appointmentService.CreateAppointmentWithDetail(appointmentDto);
-        return Ok(new ApiResponse<Appointment> { IsSuccess = true, Data = appointment });
-      }
-      catch (ArgumentException ex)
-      {
-        return Ok(new ApiResponse<string> { IsSuccess = false, Message = ex.Message });
-      }
     }
     private async Task<string> GetRandomTherapistId(DateTime selectedDate, double? latitude, double? longitude)
     {

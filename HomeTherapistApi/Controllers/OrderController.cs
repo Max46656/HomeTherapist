@@ -6,6 +6,7 @@ using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using HomeTherapistApi.Services;
 using Microsoft.AspNetCore.Authorization;
+using HomeTherapistApi.Utilities;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -33,10 +34,11 @@ namespace HomeTherapistApi.Controllers
     public async Task<IActionResult> Get()
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
-      var Order = await _context.Orders
+      if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供使用者 ID" });
+
+      var orders = await _context.Orders
          .Include(a => a.OrderDetails)
-             .ThenInclude(ad => ad.Service)
+         .ThenInclude(ad => ad.Service)
          .Where(a => a.UserId == userId)
          .Select(a => new
          {
@@ -50,19 +52,21 @@ namespace HomeTherapistApi.Controllers
            Calendar = a.Calendar
          })
          .ToListAsync();
-      if (Order.Count == 0)
-        return NotFound();
 
-      return Ok(Order);
+      if (orders.Count == 0)
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到訂單" });
+
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
     [HttpGet("{IdNumber}")]
     public async Task<IActionResult> GetOrderByIdNumber(string IdNumber)
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
-      var Order = await _context.Orders
+      if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供使用者 ID" });
+
+      var orders = await _context.Orders
          .Include(a => a.OrderDetails)
-             .ThenInclude(ad => ad.Service)
+         .ThenInclude(ad => ad.Service)
          .Where(a => a.UserId == userId && a.CustomerId == IdNumber)
          .Select(a => new
          {
@@ -76,19 +80,21 @@ namespace HomeTherapistApi.Controllers
            Calendar = a.Calendar
          })
          .ToListAsync();
-      if (Order.Count == 0)
-        return NotFound();
 
-      return Ok(Order);
+      if (orders.Count == 0)
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到訂單" });
+
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
     [HttpGet("{Id}")]
     public async Task<IActionResult> GetOrderById(ulong Id)
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
-      var Order = await _context.Orders
+      if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供使用者 ID" });
+
+      var orders = await _context.Orders
          .Include(a => a.OrderDetails)
-             .ThenInclude(ad => ad.Service)
+         .ThenInclude(ad => ad.Service)
          .Where(a => a.UserId == userId && a.Id == Id)
          .Select(a => new
          {
@@ -102,18 +108,19 @@ namespace HomeTherapistApi.Controllers
            Calendar = a.Calendar
          })
          .ToListAsync();
-      if (Order.Count == 0)
-        return NotFound();
 
-      return Ok(Order);
+      if (orders.Count == 0)
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到訂單" });
+
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
-    // POST: api/Order
+
     [HttpPost]
-    public Order CreateOrderWithDetail(OrderDto OrderDto)
+    public IActionResult CreateOrderWithDetail(OrderDto orderDto)
     {
       var missingFields = new List<string>();
 
-      missingFields.AddRange(OrderDto switch
+      missingFields.AddRange(orderDto switch
       {
         { UserId: null or "" } => new[] { "治療師" },
         { StartDt: null } => new[] { "預約時間" },
@@ -127,100 +134,69 @@ namespace HomeTherapistApi.Controllers
         _ => Array.Empty<string>()
       });
 
-      var errorMessage = "缺少以下必要字段: " + string.Join(", ", missingFields);
-
       if (missingFields.Count > 0)
-        throw new ArgumentException(errorMessage);
-
-      if (!ValidatorService.ValidateTaiwanId(OrderDto.CustomerId))
-        throw new ArgumentException("身份證字號錯誤。");
-
-      var Order = new Order
       {
-        UserId = OrderDto.UserId,
-        StartDt = OrderDto.StartDt,
-        CustomerId = OrderDto.CustomerId,
-        CustomerPhone = OrderDto.CustomerPhone,
-        CustomerAddress = OrderDto.CustomerAddress,
-        Latitude = OrderDto.Latitude,
-        Longitude = OrderDto.Longitude,
+        var errorMessage = "缺少以下必要字段: " + string.Join(", ", missingFields);
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = errorMessage });
+      }
+
+      if (!ValidatorService.ValidateTaiwanId(orderDto.CustomerId))
+      {
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "身份證字號錯誤。" });
+      }
+
+      var order = new Order
+      {
+        UserId = orderDto.UserId,
+        StartDt = orderDto.StartDt,
+        CustomerId = orderDto.CustomerId,
+        CustomerPhone = orderDto.CustomerPhone,
+        CustomerAddress = orderDto.CustomerAddress,
+        Latitude = orderDto.Latitude,
+        Longitude = orderDto.Longitude,
         IsComplete = false,
         CreatedAt = DateTime.Now,
         UpdatedAt = DateTime.Now
       };
 
-      var OrderDetail = new OrderDetail
+      var orderDetail = new OrderDetail
       {
-        ServiceId = OrderDto.ServiceId,
-        Price = OrderDto.Price,
-        Note = OrderDto.Note,
+        ServiceId = orderDto.ServiceId,
+        Price = orderDto.Price,
+        Note = orderDto.Note,
         CreatedAt = DateTime.Now,
         UpdatedAt = DateTime.Now
       };
 
-      // 互相關連
-      Order.OrderDetails.Add(OrderDetail);
-      OrderDetail.Order = Order;
+      order.OrderDetails.Add(orderDetail);
+      orderDetail.Order = order;
 
-      _context.Orders.Add(Order);
+      _context.Orders.Add(order);
       _context.SaveChanges();
 
-      return Order;
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "訂單創建成功", Data = order });
     }
-
-    // PATCH: api/Order/5
-    [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateOrder(ulong id, [FromBody] JsonPatchDocument<Order> patchDocument)
+    public class OrderDto
     {
-      var order = await _context.Orders.Include(o => o.OrderDetails).FirstOrDefaultAsync(o => o.Id == id);
-
-      if (order == null)
-        return NotFound();
-
-      patchDocument.ApplyTo(order, ModelState);
-
-      if (!ModelState.IsValid)
-        return BadRequest(ModelState);
-
-      await _context.SaveChangesAsync();
-
-      return NoContent();
+      [Required]
+      public string? UserId { get; set; }
+      [Required]
+      public DateTime? StartDt { get; set; }
+      [Required]
+      public string? CustomerId { get; set; }
+      [Required]
+      public string? CustomerPhone { get; set; }
+      [Required]
+      public string? CustomerAddress { get; set; }
+      [Required]
+      public decimal Latitude { get; set; }
+      [Required]
+      public decimal Longitude { get; set; }
+      [Required]
+      public ulong ServiceId { get; set; }
+      [Required]
+      public double Price { get; set; }
+      public string? Note { get; set; }
     }
-
-    // DELETE: api/Order/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteOrder(long id)
-    {
-      var order = await _context.Orders.FindAsync(id);
-      if (order == null)
-        return NotFound();
-
-      order.IsComplete = false;
-      await _context.SaveChangesAsync();
-
-      return NoContent();
-    }
-  }
-  public class OrderDto
-  {
-    [Required]
-    public string? UserId { get; set; }
-    [Required]
-    public DateTime? StartDt { get; set; }
-    [Required]
-    public string? CustomerId { get; set; }
-    [Required]
-    public string? CustomerPhone { get; set; }
-    [Required]
-    public string? CustomerAddress { get; set; }
-    [Required]
-    public decimal Latitude { get; set; }
-    [Required]
-    public decimal Longitude { get; set; }
-    [Required]
-    public ulong ServiceId { get; set; }
-    [Required]
-    public double Price { get; set; }
-    public string? Note { get; set; }
   }
 }

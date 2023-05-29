@@ -9,6 +9,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using HomeTherapistApi.Models;
+using HomeTherapistApi.Utilities;
+using MimeKit;
+using System.Configuration;
+using MailKit.Net.Smtp;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -35,34 +39,33 @@ namespace HomeTherapistApi.Controllers
     public async Task<IActionResult> Login(LoginDto model)
     {
       if (model.Email == null || model.Password == null)
-        return BadRequest();
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "Email和密碼不能為空" });
 
-      // var user = await _userManager.FindByNameAsync(model.Name);
       var user = await _userManager.FindByEmailAsync(model.Email);
 
       if (user == null || user.PasswordHash == null)
-        return Unauthorized();
+        return Unauthorized(new ApiResponse<object> { IsSuccess = false, Message = "未授權，請檢查帳號密碼" });
 
       var passwordHasher = new PasswordHasher<User>();
       var verificationResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
 
       if (verificationResult == PasswordVerificationResult.Failed)
-        return Unauthorized();
+        return Unauthorized(new ApiResponse<object> { IsSuccess = false, Message = "未授權，請檢查帳號密碼" });
 
       var token = GenerateJwtToken(user);
 
-      return Ok(new { token });
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "登入成功", Data = new { token } });
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto model)
     {
       if (model.UserName == null || model.Email == null || model.StaffId == null || model.Password == null)
-        return BadRequest();
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請填寫所有必填欄位" });
 
       var existingUser = await _userManager.FindByEmailAsync(model.Email);
       if (existingUser != null)
-        return BadRequest("Email已被註冊");
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "該Email已被註冊" });
 
       var newUser = new User
       {
@@ -76,19 +79,60 @@ namespace HomeTherapistApi.Controllers
         UpdatedAt = DateTime.UtcNow
       };
 
-
       newUser.PasswordHash = _passwordHasher.HashPassword(newUser, model.Password);
 
-
       var result = await _userManager.CreateAsync(newUser);
-      if (!result.Succeeded)
-      {
-        return BadRequest(result.Errors);
-      }
-      var token = GenerateJwtToken(newUser);
-      return Ok(new { token });
-    }
 
+      if (!result.Succeeded)
+        return BadRequest(new ApiResponse<object>
+        { IsSuccess = false, Message = "註冊失敗", Data = result.Errors });
+
+      var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+      // token = Encoding.UTF8.GetString(Base64Utils.Base64UrlDecode(token));
+      var callbackUrl = Url.Link("ConfirmEmail", new { userId = newUser.Id, token });
+
+      var emailMessage = new MimeMessage();
+      emailMessage.From.Add(new MailboxAddress("寄件人姓名", "寄件人郵箱地址"));
+      emailMessage.To.Add(new MailboxAddress("收件人姓名", newUser.Email));
+      emailMessage.Subject = "請確認您的電子郵件地址";
+      emailMessage.Body = new TextPart("html")
+      {
+        ContentTransferEncoding = ContentEncoding.Base64,
+        Text = $"<a href=\"{callbackUrl}\">請點擊此處確認您的電子郵件地址</a>"
+      };
+      var emailSettings = _configuration.GetSection("EmailSettings");
+      var smtpServer = emailSettings["SmtpServer"];
+      var smtpPort = int.Parse(emailSettings["SmtpPort"]);
+      var smtpUsername = emailSettings["SmtpUsername"];
+      var smtpPassword = emailSettings["SmtpPassword"];
+      using (var client = new SmtpClient())
+      {
+        client.Connect(smtpServer, smtpPort, false);
+        client.Authenticate(smtpUsername, smtpPassword);
+        client.Send(emailMessage);
+        client.Disconnect(true);
+      }
+
+      // var token = GenerateJwtToken(newUser);
+      return Ok(new ApiResponse<object>
+      { IsSuccess = true, Message = "註冊成功", Data = new { callbackUrl, token } });
+    }
+    [HttpGet("ConfirmEmail")]
+    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    {
+      if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+        return BadRequest();
+
+      var user = await _userManager.FindByIdAsync(userId);
+      if (user == null)
+        return NotFound();
+
+      var result = await _userManager.ConfirmEmailAsync(user, token);
+      if (result.Succeeded)
+        return Ok("您的電子郵件已成功驗證");
+      else
+        return BadRequest("驗證電子郵件時發生錯誤");
+    }
     private string GenerateJwtToken(User user)
     {
       var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"] ?? throw new InvalidOperationException()));

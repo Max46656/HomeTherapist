@@ -44,7 +44,7 @@ namespace HomeTherapistApi.Services
       if (missingFields.Count > 0)
         throw new ArgumentException(errorMessage);
 
-      if (!ValidatorService.ValidateTaiwanId(appointmentDto.CustomerId))
+      if (ValidatorService.ValidateTaiwanId(appointmentDto.CustomerId))
         throw new ArgumentException("身份證字號錯誤。");
 
       var appointment = new Appointment

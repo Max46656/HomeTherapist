@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using HomeTherapistApi.Models;
+using HomeTherapistApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -25,14 +26,22 @@ namespace HomeTherapistApi.Controllers
 
     // GET: api/TherapistOpenTime
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TherapistOpenTime>>> GetTherapistOpenTimes()
+    public async Task<IActionResult> GetTherapistOpenTimes()
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
+      if (userId == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無法取得使用者資訊" });
 
-      return await _context.TherapistOpenTimes
+      var openTimes = await _context.TherapistOpenTimes
           .Where(t => t.UserId == userId)
           .ToListAsync();
+
+      return Ok(new ApiResponse<List<TherapistOpenTime>>
+      {
+        IsSuccess = true,
+        Message = "取得治療師開放時間成功",
+        Data = openTimes
+      });
     }
     // {
     //   "UserId": "T5106",
@@ -40,29 +49,29 @@ namespace HomeTherapistApi.Controllers
     // }
     // POST: api/TherapistOpenTime
     [HttpPost]
-    public async Task<ActionResult<TherapistOpenTime>> PostTherapistOpenTime(DateTime? dateTime)
+    public async Task<IActionResult> PostTherapistOpenTime(DateTime? startDt)
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
+      if (userId == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無法取得使用者資訊" });
 
-      // 根據 UserId 查詢相應的 User 物件
       var user = await _context.Users.SingleOrDefaultAsync(u => u.StaffId == userId);
-      if (user == null) return BadRequest("使用者錯誤。");
+      if (user == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "使用者不存在" });
 
-      // 根據 StartDt 查詢相應的 Calendar 物件
-      var calendar = await _context.Calendars.SingleOrDefaultAsync(c => c.Dt == dateTime);
-      if (calendar == null) return BadRequest("可設定時間以10分鐘為刻度。");
+      var calendar = await _context.Calendars.SingleOrDefaultAsync(c => c.Dt == startDt);
+      if (calendar == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "可設定時間以10分鐘為刻度" });
 
       var existingOpenTime = await _context.TherapistOpenTimes
-         .FirstOrDefaultAsync(s => s.StartDt == dateTime && s.UserId == userId);
+          .FirstOrDefaultAsync(s => s.StartDt == startDt && s.UserId == userId);
       if (existingOpenTime != null)
-        return Conflict("已啟用該時間。");
+        return Conflict(new ApiResponse<object> { IsSuccess = false, Message = "已啟用該時間" });
 
-      // 建立 TherapistOpenTime 物件並設定屬性值
       var therapistOpenTime = new TherapistOpenTime
       {
         UserId = userId,
-        StartDt = dateTime,
+        StartDt = startDt,
         User = user,
         Calendar = calendar,
         CreatedAt = DateTime.Now,
@@ -72,23 +81,29 @@ namespace HomeTherapistApi.Controllers
       _context.TherapistOpenTimes.Add(therapistOpenTime);
       await _context.SaveChangesAsync();
 
-      return CreatedAtAction(nameof(GetTherapistOpenTimes), new { id = therapistOpenTime.Id }, therapistOpenTime);
+      return CreatedAtAction(nameof(GetTherapistOpenTimes), new { id = therapistOpenTime.Id }, new ApiResponse<TherapistOpenTime>
+      {
+        IsSuccess = true,
+        Message = "新增治療師開放時間成功",
+        Data = therapistOpenTime
+      });
     }
     // DELETE: api/TherapistOpenTime/5
     [HttpDelete]
-    public async Task<IActionResult> DeleteTherapistOpenTime(DateTime? dateTime)
+    public async Task<IActionResult> DeleteTherapistOpenTime(DateTime? startDt)
     {
-      if (dateTime == null)
-        return BadRequest("需要輸入欲刪除日期與時間。");
+      if (startDt == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供欲刪除的日期與時間" });
 
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest();
+      if (userId == null)
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無法取得使用者資訊" });
 
       var therapistOpenTime = await _context.TherapistOpenTimes
-      .FirstOrDefaultAsync(a => a.UserId == userId && a.StartDt == dateTime!.Value);
+          .FirstOrDefaultAsync(a => a.UserId == userId && a.StartDt == startDt!.Value);
 
       if (therapistOpenTime == null)
-        return NotFound();
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到指定的治療師開放時間" });
 
       _context.TherapistOpenTimes.Remove(therapistOpenTime);
       await _context.SaveChangesAsync();
