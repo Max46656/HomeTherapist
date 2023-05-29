@@ -205,31 +205,22 @@ namespace HomeTherapistApi.Controllers
   {
     [Required]
     public string? UserId { get; set; }
-
     [Required]
     public DateTime? StartDt { get; set; }
-
     [Required]
     public string? CustomerId { get; set; }
-
     [Required]
     public string? CustomerPhone { get; set; }
-
     [Required]
     public string? CustomerAddress { get; set; }
-
     [Required]
     public decimal Latitude { get; set; }
-
     [Required]
     public decimal Longitude { get; set; }
-
     [Required]
     public ulong ServiceId { get; set; }
-
     [Required]
     public double Price { get; set; }
-
     public string? Note { get; set; }
   }
 }

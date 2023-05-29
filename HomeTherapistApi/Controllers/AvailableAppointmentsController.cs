@@ -7,6 +7,7 @@ using HomeTherapistApi.Models;
 using HomeTherapistApi.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using HomeTherapistApi.Utilities;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -27,40 +28,116 @@ namespace HomeTherapistApi.Controllers
 
     [HttpGet]
     [Route("getAvailableDays")]
-    public async Task<List<DateTime>> GetAvailableDays(double? latitude, double? longitude, ulong serviceId, DateTime? date)
+    public async Task<IActionResult> GetAvailableDays(double? latitude, double? longitude, ulong serviceId, DateTime? date)
     {
-      ValidateInput(latitude, longitude, date, "經緯度、月份為必要資訊。");
+      try
+      {
+        ValidateInput(latitude, longitude, date, "經緯度、月份為必要資訊。");
 
-      var therapistsInRange = await GetTherapistsInRange(latitude, longitude);
-      var availableDays = await GetAvailableDaysForTherapists(therapistsInRange, date!.Value);
+        var therapistsInRange = await GetTherapistsInRange(latitude, longitude);
+        var availableDays = await GetAvailableDaysForTherapists(therapistsInRange, date!.Value);
 
-      return availableDays.Distinct().OrderBy(day => day).ToList();
+        return Ok(new ApiResponse<List<DateTime>> { IsSuccess = true, Data = availableDays.Distinct().OrderBy(day => day).ToList() });
+      }
+      catch (Exception ex)
+      {
+        return Ok(new ApiResponse<string> { IsSuccess = false, Message = ex.Message });
+      }
     }
 
     [HttpGet]
-    [Route("availabledDatetimes")]
-    public async Task<List<AvailableAppointmentDto>> GetAvailableDatetime(double? latitude, double? longitude, ulong serviceId, DateTime? date)
+    [Route("getAvailableDatetime")]
+    public async Task<IActionResult> GetAvailableDatetime(double? latitude, double? longitude, ulong serviceId, DateTime? date)
     {
-      ValidateInput(latitude, longitude, date, "經緯度、日期為必要資訊。");
-      _therapistsInRange = null;
-      var therapistsInRange = await _GetTherapistsInRange(latitude, longitude);
-      var availabledDatetimes = await GetAvailableAppointmentsForTherapists(therapistsInRange, date!.Value);
-
-      return availabledDatetimes;
-    }
-    [HttpPost]
-    [Route("createAppointment")]
-    public async Task<IActionResult> CreateAppointmentAsync([FromBody] AppointmentDto appointmentDto, DateTime selectedDate, double? latitude, double? longitude)
-    {
-      appointmentDto.UserId = await GetRandomTherapistId(selectedDate, latitude, longitude);
       try
       {
+        ValidateInput(latitude, longitude, date, "經緯度、日期為必要資訊。");
+
+        var therapistsInRange = await GetTherapistsInRange(latitude, longitude);
+        var availableDatetimes = await GetAvailableDatetimesForTherapists(therapistsInRange, date!.Value);
+
+        return Ok(new ApiResponse<List<DateTime>> { IsSuccess = true, Data = availableDatetimes });
+      }
+      catch (Exception ex)
+      {
+        return Ok(new ApiResponse<string> { IsSuccess = false, Message = ex.Message });
+      }
+    }
+
+    private async Task<List<DateTime>> GetAvailableDatetimesForTherapists(List<User> therapistsInRange, DateTime date)
+    {
+      var availableDatetimes = new List<DateTime>();
+
+      foreach (var therapist in therapistsInRange)
+      {
+        var openDatetimes = await GetAvailableDatetimesForTherapist(therapist, date);
+        availableDatetimes.AddRange(openDatetimes);
+      }
+
+      return availableDatetimes;
+    }
+
+    private async Task<List<DateTime>> GetAvailableDatetimesForTherapist(User therapist, DateTime date)
+    {
+      var openTimes = await _context.TherapistOpenTimes
+          .Where(time => time.UserId == therapist.StaffId && time.StartDt.HasValue && time.StartDt.Value.Date == date.Date)
+          .OrderBy(time => time.StartDt)
+          .ToListAsync();
+
+      var availableDatetimes = new List<DateTime>();
+
+      if (openTimes == null)
+        return availableDatetimes;
+
+      foreach (var openTime in openTimes)
+      {
+        // 排除已被預約的時間
+        var overlappingAppointments = await _context.Appointments
+            .Where(a => a.UserId == therapist.StaffId && a.StartDt >= openTime.StartDt && a.StartDt < openTime.StartDt.Value.AddHours(3))
+            .ToListAsync();
+
+        var timeSlotStart = openTime.StartDt!.Value;
+        while (timeSlotStart < openTime.StartDt.Value.AddHours(3))
+        {
+          if (!overlappingAppointments.Any(a => a.StartDt == timeSlotStart))
+          {
+            availableDatetimes.Add(timeSlotStart);
+          }
+
+          timeSlotStart = timeSlotStart.AddHours(1);
+        }
+      }
+
+      return availableDatetimes;
+    }
+
+
+    [HttpPost]
+    [Route("createAppointment")]
+    public async Task<IActionResult> CreateAppointmentAsync([FromBody] AppointmentInputDto appointmentInputDto)
+    {
+      try
+      {
+        var appointmentDto = new AppointmentDto
+        {
+          ServiceId = appointmentInputDto.ServiceId,
+          CustomerId = appointmentInputDto.CustomerId,
+          CustomerPhone = appointmentInputDto.CustomerPhone,
+          CustomerAddress = appointmentInputDto.CustomerAddress,
+          Note = appointmentInputDto.Note,
+          UserId = await GetRandomTherapistId(appointmentInputDto.SelectedDate, appointmentInputDto.Latitude, appointmentInputDto.Longitude),
+          Price = (double)(_context.Services.FirstOrDefault(a => a.Id == appointmentInputDto.ServiceId)?.Price!),
+          StartDt = appointmentInputDto.SelectedDate,
+          Latitude = (decimal)appointmentInputDto.Latitude!,
+          Longitude = (decimal)appointmentInputDto.Longitude!
+        };
+
         var appointment = _appointmentService.CreateAppointmentWithDetail(appointmentDto);
-        return Ok(appointment);
+        return Ok(new ApiResponse<Appointment> { IsSuccess = true, Data = appointment });
       }
       catch (ArgumentException ex)
       {
-        return BadRequest(ex.Message);
+        return Ok(new ApiResponse<string> { IsSuccess = false, Message = ex.Message });
       }
     }
     private async Task<string> GetRandomTherapistId(DateTime selectedDate, double? latitude, double? longitude)
@@ -194,6 +271,17 @@ namespace HomeTherapistApi.Controllers
   }
 
 
+}
+public class AppointmentInputDto
+{
+  public ulong ServiceId { get; set; }
+  public string CustomerId { get; set; }
+  public string CustomerPhone { get; set; }
+  public string CustomerAddress { get; set; }
+  public string Note { get; set; }
+  public DateTime SelectedDate { get; set; }
+  public double? Latitude { get; set; }
+  public double? Longitude { get; set; }
 }
 
 public class AvailableAppointmentDto
