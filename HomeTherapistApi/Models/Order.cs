@@ -21,6 +21,9 @@ public partial class Order
   public decimal Latitude { get; set; }
 
   public decimal Longitude { get; set; }
+  public string? Gender { get; set; }
+
+  public string? AgeGroup { get; set; }
 
   public bool IsComplete { get; set; }
 

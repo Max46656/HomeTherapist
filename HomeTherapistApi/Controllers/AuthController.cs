@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -133,6 +134,27 @@ namespace HomeTherapistApi.Controllers
       else
         return BadRequest("驗證電子郵件時發生錯誤");
     }
+    [Authorize]
+    [HttpPost("ChangePassword")]
+    public async Task<IActionResult> ChangePassword(PasswordChangeDto passwordChange)
+    {
+      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+      if (userId == null)
+        return BadRequest(new ApiResponse<object>
+        { IsSuccess = false, Message = "無效的使用者 ID" });
+
+      var user = await _userManager.FindByIdAsync(userId);
+      if (user == null)
+        return NotFound(new ApiResponse<object>
+        { IsSuccess = false, Message = "找不到使用者" });
+
+      var result = await _userManager.ChangePasswordAsync(user, passwordChange.CurrentPassword, passwordChange.NewPassword);
+      if (!result.Succeeded)
+        return BadRequest(new ApiResponse<object>
+        { IsSuccess = false, Message = "變更密碼失敗", Data = result.Errors });
+
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "變更密碼成功" });
+    }
     private string GenerateJwtToken(User user)
     {
       var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"] ?? throw new InvalidOperationException()));
@@ -183,5 +205,14 @@ namespace HomeTherapistApi.Controllers
 
     [Compare("Password", ErrorMessage = "Passwords do not match")]
     public string? ConfirmPassword { get; set; }
+  }
+  public class PasswordChangeDto
+  {
+    [Required]
+    public string CurrentPassword { get; set; }
+
+    [Required]
+    [MinLength(6)]
+    public string NewPassword { get; set; }
   }
 }

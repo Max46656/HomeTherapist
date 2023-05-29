@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Reflection;
 
 namespace HomeTherapistApi.Models;
 
@@ -20,7 +22,9 @@ public partial class Appointment
   public decimal Latitude { get; set; }
 
   public decimal Longitude { get; set; }
+  public string? Gender { get; set; }
 
+  public string? AgeGroup { get; set; }
   public bool IsComplete { get; set; }
 
   public DateTime? CreatedAt { get; set; }

@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using HomeTherapistApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using HomeTherapistApi.Utilities;
+using System.ComponentModel;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -34,7 +35,7 @@ namespace HomeTherapistApi.Controllers
     public async Task<IActionResult> Get()
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供使用者 ID" });
+      if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請登入" });
 
       var orders = await _context.Orders
          .Include(a => a.OrderDetails)
@@ -62,7 +63,7 @@ namespace HomeTherapistApi.Controllers
     public async Task<IActionResult> GetOrderByIdNumber(string IdNumber)
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供使用者 ID" });
+      if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請登入" });
 
       var orders = await _context.Orders
          .Include(a => a.OrderDetails)
@@ -90,7 +91,7 @@ namespace HomeTherapistApi.Controllers
     public async Task<IActionResult> GetOrderById(ulong Id)
     {
       var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供使用者 ID" });
+      if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請登入" });
 
       var orders = await _context.Orders
          .Include(a => a.OrderDetails)
@@ -113,6 +114,78 @@ namespace HomeTherapistApi.Controllers
         return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到訂單" });
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
+    }
+
+    [HttpGet("gender/{gender}")]
+    public async Task<IActionResult> GetOrdersByGender(string gender)
+    {
+      var totalOrderCount = await _context.Orders.CountAsync();
+
+      if (!IsValidGender(gender))
+      {
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無效的性別" });
+      }
+
+      var genderOrderCount = await _context.Orders.CountAsync(o => o.Gender.Equals(gender));
+
+      var percentage = Math.Round((double)genderOrderCount / totalOrderCount * 100, 2);
+
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = $"在全部的訂單中，你所查詢的條件佔{percentage.ToString("0.00")}%." });
+    }
+
+    [HttpGet("agegroup/{ageGroup}")]
+    public async Task<IActionResult> GetOrdersByAgeGroup(string ageGroup)
+    {
+      var totalOrderCount = await _context.Orders.CountAsync();
+
+      if (!IsValidAgeGroup(ageGroup))
+      {
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無效的年齡層" });
+      }
+
+      var ageGroupOrderCount = await _context.Orders.CountAsync(o => o.AgeGroup.Equals(ageGroup));
+
+      var percentage = Math.Round((double)ageGroupOrderCount / totalOrderCount * 100, 2);
+
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = $"在全部的訂單中，你所查詢的條件佔{percentage.ToString("0.00")}%." });
+    }
+
+
+    [HttpGet("gender/{gender}/agegroup/{ageGroup}")]
+    public async Task<IActionResult> GetOrdersByGenderAndAgeGroup(string gender, string ageGroup)
+    {
+      var totalOrderCount = await _context.Orders.CountAsync();
+
+      // 驗證性別和年齡層是否為有效選項
+      if (!IsValidGender(gender))
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無效的性別" });
+
+
+      if (!IsValidAgeGroup(ageGroup))
+        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無效的年齡層" });
+
+
+      var genderAndAgeGroupOrderCount = await _context.Orders.CountAsync(o =>
+          o.Gender.Equals(gender) &&
+          o.AgeGroup.Equals(ageGroup));
+
+      var percentage = Math.Round((double)genderAndAgeGroupOrderCount / totalOrderCount * 100, 2);
+
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = $"在全部的訂單中，你所查詢的條件佔{percentage.ToString("0.00")}%." });
+    }
+
+    private bool IsValidGender(string gender)
+    {
+      // 檢查性別是否為有效選項
+      var validGenders = new List<string> { "男", "女", "其他" };
+      return validGenders.Contains(gender, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private bool IsValidAgeGroup(string ageGroup)
+    {
+      // 檢查年齡層是否為有效選項
+      var validAgeGroups = new List<string> { "小於18", "18到25", "26到35", "36到45", "46到55", "56到65", "66到75", "大於75" };
+      return validAgeGroups.Contains(ageGroup, StringComparer.OrdinalIgnoreCase);
     }
 
     [HttpPost]
@@ -140,10 +213,9 @@ namespace HomeTherapistApi.Controllers
         return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = errorMessage });
       }
 
-      if (!ValidatorService.ValidateTaiwanId(orderDto.CustomerId))
-      {
+      if (ValidatorService.ValidateTaiwanId(orderDto.CustomerId))
         return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "身份證字號錯誤。" });
-      }
+
 
       var order = new Order
       {
@@ -198,5 +270,7 @@ namespace HomeTherapistApi.Controllers
       public double Price { get; set; }
       public string? Note { get; set; }
     }
+
+
   }
 }

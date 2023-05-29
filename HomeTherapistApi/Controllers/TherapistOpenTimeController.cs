@@ -108,7 +108,12 @@ namespace HomeTherapistApi.Controllers
       _context.TherapistOpenTimes.Remove(therapistOpenTime);
       await _context.SaveChangesAsync();
 
-      return NoContent();
+      return Ok(new ApiResponse<TherapistOpenTime>
+      {
+        IsSuccess = true,
+        Message = "刪除治療師開放時間成功",
+        Data = therapistOpenTime
+      });
     }
   }
   public class TherapistOpenTimeDto

@@ -107,7 +107,12 @@ namespace HomeTherapistApi.Controllers
       _context.TherapistOpenServices.Remove(therapistOpenService);
       await _context.SaveChangesAsync();
 
-      return NoContent();
+      return Ok(new ApiResponse<TherapistOpenService>
+      {
+        IsSuccess = true,
+        Message = "刪除治療師開放服務成功",
+        Data = therapistOpenService
+      });
     }
   }
   public class TherapistOpenServiceDto

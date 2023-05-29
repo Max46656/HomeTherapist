@@ -96,6 +96,13 @@ public partial class HometherapistContext : IdentityDbContext<User, Role, ulong>
       entity.Property(e => e.CustomerPhone)
               .HasMaxLength(10)
               .HasColumnName("customer_phone");
+      entity.Property(e => e.Gender)
+    .HasMaxLength(10)
+    .HasColumnName("gender");
+
+      entity.Property(e => e.AgeGroup)
+          .HasMaxLength(10)
+          .HasColumnName("age_group");
       entity.Property(e => e.IsComplete).HasColumnName("is_complete");
       entity.Property(e => e.StartDt)
               .HasColumnType("datetime")
@@ -366,10 +373,19 @@ public partial class HometherapistContext : IdentityDbContext<User, Role, ulong>
       entity.Property(e => e.CustomerPhone)
               .HasMaxLength(10)
               .HasColumnName("customer_phone");
+      entity.Property(e => e.Gender)
+              .HasMaxLength(10)
+              .HasColumnName("gender");
+      entity.Property(e => e.AgeGroup)
+                .HasMaxLength(10)
+                .HasColumnName("age_group");
+      // .HasConversion(
+      //   v => v.ToString(),
+      //   v => (AgeGroup)Enum.Parse(typeof(AgeGroup), v));
       entity.Property(e => e.IsComplete).HasColumnName("is_complete");
       entity.Property(e => e.StartDt)
-              .HasColumnType("datetime")
-              .HasColumnName("start_dt");
+        .HasColumnType("datetime")
+        .HasColumnName("start_dt");
       entity.Property(e => e.UpdatedAt)
               .HasColumnType("timestamp")
               .HasColumnName("updated_at");
