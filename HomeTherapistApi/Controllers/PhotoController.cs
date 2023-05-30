@@ -84,21 +84,20 @@ namespace HomeTherapistApi.Controllers
     }
 
     [HttpGet("ProfileImage")]
-    public IActionResult GetProfileImage()
+    public IActionResult GetProfileImage(string? staffId)
     {
-      var userId = User.FindFirst("StaffId")?.Value;
-      if (userId == null)
+      if (string.IsNullOrEmpty(staffId))
       {
         // 返回匿名請求所對應的工號.jpg 圖片
-        var anonymousUserId = "anonymous";
-        var fileName = $"{anonymousUserId}.jpg";
+        var userId = User.FindFirst("StaffId")?.Value;
+        var fileName = $"{userId}.jpg";
         var imagePath = Path.Combine("ProfilePhoto", fileName);
         var physicalFileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
         return File(physicalFileProvider.GetFileInfo(imagePath).CreateReadStream(), "image/jpeg");
       }
 
       // 返回使用者所對應的工號.jpg 圖片
-      var userFileName = $"{userId}.jpg";
+      var userFileName = $"{staffId}.jpg";
       var userImagePath = Path.Combine("ProfilePhoto", userFileName);
       var userPhysicalFileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
       return File(userPhysicalFileProvider.GetFileInfo(userImagePath).CreateReadStream(), "image/jpeg");
