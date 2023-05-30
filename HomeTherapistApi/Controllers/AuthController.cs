@@ -57,6 +57,13 @@ namespace HomeTherapistApi.Controllers
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "登入成功", Data = new { token } });
     }
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+      await _signInManager.SignOutAsync();
+      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "登出成功" });
+    }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto model)

@@ -39,7 +39,7 @@ public class UserController : ControllerBase
     if (user == null)
       return NotFound();
 
-    return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = user });
+    return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得使用者成功", Data = user });
   }
   //[
   //   {
@@ -146,39 +146,39 @@ public class UserController : ControllerBase
   }
 
 
-  //   [HttpGet("GetOrdersByUser")]
-  //   public async Task<IActionResult> GetOrdersByUser()
-  //   {
-  //     var staffId = User.FindFirst("StaffId")?.Value;
+  [HttpGet("GetOrdersByUser")]
+  public async Task<IActionResult> GetOrdersByUser()
+  {
+    var staffId = User.FindFirst("StaffId")?.Value;
 
-  //     var orders = await _context.Orders
-  //                                .Where(o => o.UserId == staffId)
-  //                                .ToListAsync();
+    var orders = await _context.Orders
+                               .Where(o => o.UserId == staffId)
+                               .ToListAsync();
 
-  //     return Ok(orders);
-  //   }
-  //   [HttpGet("GetFeedbacksByUser")]
-  //   public IActionResult GetFeedbacksByUser()
-  //   {
-  //     var staffId = User.FindFirst("StaffId")?.Value;
-  //     var feedbacks = _context.Users
-  //                               .Where(u => u.StaffId == staffId)
-  //                               .SelectMany(u => u.Feedbacks)
-  //                               .ToList();
+    return Ok(orders);
+  }
+  [HttpGet("GetFeedbacksByUser")]
+  public IActionResult GetFeedbacksByUser()
+  {
+    var staffId = User.FindFirst("StaffId")?.Value;
+    var feedbacks = _context.Users
+                              .Where(u => u.StaffId == staffId)
+                              .SelectMany(u => u.Feedbacks)
+                              .ToList();
 
-  //     return Ok(feedbacks);
-  //   }
-  //   [HttpGet("GetArticlesByUser")]
-  //   public IActionResult GetArticlesByUser()
-  //   {
-  //     var staffId = User.FindFirst("StaffId")?.Value;
-  //     var articles = _context.Users
-  //                            .Where(u => u.StaffId == staffId)
-  //                            .SelectMany(u => u.Articles)
-  //                            .ToList();
+    return Ok(feedbacks);
+  }
+  [HttpGet("GetArticlesByUser")]
+  public IActionResult GetArticlesByUser()
+  {
+    var staffId = User.FindFirst("StaffId")?.Value;
+    var articles = _context.Users
+                           .Where(u => u.StaffId == staffId)
+                           .SelectMany(u => u.Articles)
+                           .ToList();
 
-  //     return Ok(articles);
-  //   }
+    return Ok(articles);
+  }
 }
 public class UserUpdateDto
 {
