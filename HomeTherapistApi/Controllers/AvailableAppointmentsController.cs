@@ -18,12 +18,15 @@ namespace HomeTherapistApi.Controllers
   {
     private readonly HometherapistContext _context;
     private readonly IAppointmentService _appointmentService;
+    private readonly IEmailService _emailService;
     private List<User>? _therapistsInRange;
 
-    public AvailableAppointmentsController(HometherapistContext context, IAppointmentService appointmentService)
+    public AvailableAppointmentsController(HometherapistContext context, IAppointmentService appointmentService, IEmailService emailService)
     {
       _context = context;
       _appointmentService = appointmentService;
+      _emailService = emailService;
+
     }
 
     [HttpGet]
@@ -69,6 +72,7 @@ namespace HomeTherapistApi.Controllers
     {
       try
       {
+        var UserId = await GetRandomTherapistId(appointmentInputDto.SelectedDate, appointmentInputDto.Latitude, appointmentInputDto.Longitude);
         var appointmentDto = new AppointmentDto
         {
           ServiceId = appointmentInputDto.ServiceId,
@@ -76,7 +80,7 @@ namespace HomeTherapistApi.Controllers
           CustomerPhone = appointmentInputDto.CustomerPhone,
           CustomerAddress = appointmentInputDto.CustomerAddress,
           Note = appointmentInputDto.Note,
-          UserId = await GetRandomTherapistId(appointmentInputDto.SelectedDate, appointmentInputDto.Latitude, appointmentInputDto.Longitude),
+          UserId = UserId,
           Price = (double)(_context.Services.FirstOrDefault(a => a.Id == appointmentInputDto.ServiceId)?.Price!),
           StartDt = appointmentInputDto.SelectedDate,
           Latitude = (decimal)appointmentInputDto.Latitude!,
@@ -84,6 +88,9 @@ namespace HomeTherapistApi.Controllers
         };
 
         var appointment = _appointmentService.CreateAppointmentWithDetail(appointmentDto);
+        var therapistEmail = _context.Users.First(u => u.StaffId == UserId).Email!.ToString();
+        var isEmailSend = _emailService.SendAppointmentEmail(appointmentDto, therapistEmail);
+
         return Ok(new ApiResponse<Appointment> { IsSuccess = true, Data = appointment });
       }
       catch (ArgumentException ex)

@@ -14,11 +14,13 @@ namespace HomeTherapistApi.Controllers
   {
     private readonly HometherapistContext _context;
     private readonly IAppointmentService _appointmentService;
+    private readonly IEmailService _emailService;
 
-    public AppointmentController(HometherapistContext context, IAppointmentService appointmentService)
+    public AppointmentController(HometherapistContext context, IAppointmentService appointmentService, IEmailService emailService)
     {
       _appointmentService = appointmentService;
       _context = context;
+      _emailService = emailService;
     }
 
     [HttpGet("{IdNumber}")]

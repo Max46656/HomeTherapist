@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj": {}
+    "c:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj": {}
   },
   "projects": {
-    "C:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj": {
+    "c:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
+        "projectUniqueName": "c:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
         "projectName": "HomeTherapistApi",
-        "projectPath": "C:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
+        "projectPath": "c:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\HomeTherapistApi.csproj",
         "packagesPath": "C:\\Users\\maxfr\\.nuget\\packages\\",
-        "outputPath": "C:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\obj\\",
+        "outputPath": "c:\\xampp8.2.0\\htdocs\\HomeTherapist\\HomeTherapistApi\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -69,6 +69,10 @@
               "version": "[7.0.5, )"
             },
             "Microsoft.AspNetCore.Mvc.NewtonsoftJson": {
+              "target": "Package",
+              "version": "[7.0.5, )"
+            },
+            "Microsoft.AspNetCore.Mvc.Testing": {
               "target": "Package",
               "version": "[7.0.5, )"
             },

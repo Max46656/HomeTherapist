@@ -55,7 +55,7 @@ namespace HomeTherapistApi.Controllers
          .ToListAsync();
 
       if (orders.Count == 0)
-        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到訂單" });
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不-訂單" });
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
@@ -83,7 +83,7 @@ namespace HomeTherapistApi.Controllers
          .ToListAsync();
 
       if (orders.Count == 0)
-        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到訂單" });
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不-訂單" });
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
@@ -111,7 +111,7 @@ namespace HomeTherapistApi.Controllers
          .ToListAsync();
 
       if (orders.Count == 0)
-        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到訂單" });
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不-訂單" });
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
@@ -184,7 +184,7 @@ namespace HomeTherapistApi.Controllers
     private bool IsValidAgeGroup(string ageGroup)
     {
       // 檢查年齡層是否為有效選項
-      var validAgeGroups = new List<string> { "小於18", "18到25", "26到35", "36到45", "46到55", "56到65", "66到75", "大於75" };
+      var validAgeGroups = new List<string> { "小於18", "18-25", "26-35", "36-45", "46-55", "56-65", "66-75", "大於75" };
       return validAgeGroups.Contains(ageGroup, StringComparer.OrdinalIgnoreCase);
     }
 

@@ -39,6 +39,7 @@ builder.Services.AddDbContext<HometherapistContext>(options =>
 });
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddIdentity<User, Role>(options =>
 {
@@ -138,6 +139,7 @@ builder.Services.AddSwaggerGen(c =>
   c.AddSecurityDefinition("Bearer", bearerSecurityScheme);
   c.AddSecurityRequirement(securityRequirement);
   c.OperationFilter<AddBearerTokenToSwaggerFilter>();
+  c.OperationFilter<SwaggerFileUploadFilter>();
 });
 
 
