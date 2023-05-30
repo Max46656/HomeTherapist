@@ -9,6 +9,10 @@ using HomeTherapistApi.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
+using System.Security.Cryptography;
+using TextEncoder = System.Text;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -23,7 +27,7 @@ namespace HomeTherapistApi.Controllers
       _context = context;
     }
     [Authorize]
-    [HttpPost("upload-profile-image")]
+    [HttpPost("UploadProfileImage")]
     public async Task<ActionResult<ApiResponse<string>>> UploadProfileImage()
     {
       var userId = User.FindFirst("StaffId")?.Value;
@@ -67,9 +71,8 @@ namespace HomeTherapistApi.Controllers
         else
         {
           await using (var stream = new FileStream(targetPath, FileMode.Create))
-          {
             await file.CopyToAsync(stream);
-          }
+
         }
       }
     }
@@ -80,7 +83,7 @@ namespace HomeTherapistApi.Controllers
       return encoders.FirstOrDefault(encoder => encoder.MimeType == mimeType);
     }
 
-    [HttpGet("profile-image")]
+    [HttpGet("ProfileImage")]
     public IActionResult GetProfileImage()
     {
       var userId = User.FindFirst("StaffId")?.Value;
@@ -100,7 +103,73 @@ namespace HomeTherapistApi.Controllers
       var userPhysicalFileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
       return File(userPhysicalFileProvider.GetFileInfo(userImagePath).CreateReadStream(), "image/jpeg");
     }
+    // [HttpGet("generate-dummy-images")]
+    // public async Task<IActionResult> GenerateDummyImages()
+    // {
+    //   try
+    //   {
+    //     // 從資料庫獲取所有 StaffId
+    //     List<string> staffIds = await _context.Users.Select(u => u.StaffId).ToListAsync();
 
+    //     // 保存假圖的目錄路徑
+    //     var projectDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
+    //     string imagesDirectory = Path.Combine(projectDirectory, "ProfilePhoto");
+
+    //     // 創建目錄（如果不存在）
+    //     Directory.CreateDirectory(imagesDirectory);
+
+    //     // 使用 Gravatar 服務生成隨機頭像
+    //     foreach (string staffId in staffIds)
+    //     {
+    //       // 根據 StaffId 計算 Gravatar 的哈希值
+    //       string hash = CalculateGravatarHash(staffId);
+
+    //       // 生成 Gravatar 圖片的 URL
+    //       string gravatarUrl = $"https://www.gravatar.com/avatar/{hash}?s=200&d=identicon";
+
+    //       // 下載 Gravatar 圖片
+    //       using (HttpClient httpClient = new HttpClient())
+    //       {
+    //         HttpResponseMessage response = await httpClient.GetAsync(gravatarUrl);
+
+    //         if (response.IsSuccessStatusCode)
+    //         {
+    //           // 讀取圖片數據
+    //           byte[] imageData = await response.Content.ReadAsByteArrayAsync();
+
+    //           // 圖片檔案的路徑
+    //           string imagePath = Path.Combine(imagesDirectory, $"{staffId}.jpg");
+
+    //           // 保存圖片
+    //           await System.IO.File.WriteAllBytesAsync(imagePath, imageData);
+    //         }
+    //       }
+    //     }
+
+    //     return Ok("假圖生成完成");
+    //   }
+    //   catch (Exception ex)
+    //   {
+    //     // 錯誤處理邏輯
+    //     return StatusCode(500, "生成假圖時發生錯誤");
+    //   }
+    // }
+
+    // private string CalculateGravatarHash(string input)
+    // {
+    //   using (MD5 md5 = MD5.Create())
+    //   {
+    //     byte[] inputBytes = TextEncoder.Encoding.ASCII.GetBytes(input.ToLowerInvariant());
+    //     byte[] hashBytes = md5.ComputeHash(inputBytes);
+    //     TextEncoder.StringBuilder builder = new TextEncoder.StringBuilder();
+
+    //     for (int i = 0; i < hashBytes.Length; i++)
+    //     {
+    //       builder.Append(hashBytes[i].ToString("x2"));
+    //     }
+
+    //     return builder.ToString();
+    //   }
+    // }
   }
-
 }
