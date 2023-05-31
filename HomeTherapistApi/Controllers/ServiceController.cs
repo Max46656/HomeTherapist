@@ -19,12 +19,18 @@ namespace HomeTherapistApi.Controllers
       _dbContext = dbContext;
     }
 
-    [HttpGet("GetAllServiceNames")]
-    public ActionResult<ApiResponse<List<string>>> GetAllServiceNames()
+    [HttpGet("GetAllServices")]
+    public ActionResult<ApiResponse<List<ServiceDto>>> GetAllServices()
     {
-      var serviceNames = _dbContext.Services.Select(s => s.Name).ToList();
-      return Ok(new ApiResponse<List<string>>
-      { IsSuccess = true, Data = serviceNames });
+      var services = _dbContext.Services
+          .Select(s => new ServiceDto { Id = s.Id, Name = s.Name, Price = s.Price })
+          .ToList();
+
+      return Ok(new ApiResponse<List<ServiceDto>>
+      {
+        IsSuccess = true,
+        Data = services
+      });
     }
 
     [HttpGet("GetServicePrice/{serviceId}")]
@@ -38,4 +44,11 @@ namespace HomeTherapistApi.Controllers
       return Ok(new ApiResponse<double?> { IsSuccess = true, Data = service.Price });
     }
   }
+  public class ServiceDto
+  {
+    public ulong Id { get; set; }
+    public string Name { get; set; }
+    public double Price { get; set; }
+  }
+
 }

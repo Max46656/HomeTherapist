@@ -55,7 +55,7 @@ namespace HomeTherapistApi.Controllers
          .ToListAsync();
 
       if (orders.Count == 0)
-        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不-訂單" });
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "使用者沒有訂單" });
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }

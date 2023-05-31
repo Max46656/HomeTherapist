@@ -16,6 +16,7 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using HomeTherapistApi.Filters;
 using HomeTherapistApi.Services;
 using Newtonsoft.Json;
+using Microsoft.Extensions.FileProviders;
 
 #pragma warning disable CS8604
 // C: \Users\maxfr\.nuget\packages\microsoft.
@@ -132,7 +133,24 @@ var securityRequirement = new OpenApiSecurityRequirement
         new List<string>()
     }
 };
-
+// builder.Services.AddCors(options =>
+//     {
+//       options.AddPolicy("AllowFrontend", builder =>
+//       {
+//         builder.WithOrigins("http://localhost:3000") // 替換為您的前端應用程式的 URL
+//               .AllowAnyHeader()
+//               .AllowAnyMethod();
+//       });
+//     });
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("AllowAnyOrigin", builder =>
+  {
+    builder.AllowAnyOrigin()
+             .AllowAnyHeader()
+             .AllowAnyMethod();
+  });
+});
 builder.Services.AddSwaggerGen(c =>
 {
   c.SwaggerDoc("v1", new OpenApiInfo { Title = "HomeTherapist API", Version = "v1" });
@@ -145,6 +163,11 @@ builder.Services.AddSwaggerGen(c =>
 
 // Build the application.
 var app = builder.Build();
+app.UseStaticFiles(new StaticFileOptions
+{
+  FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "ProfilePhoto")),
+  RequestPath = "/ProfilePhoto"
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -160,6 +183,9 @@ if (app.Environment.IsDevelopment())
   });
 }
 app.UseRouting();
+// app.UseCors("AllowFrontend");
+app.UseCors("AllowAnyOrigin");
+
 app.UseHttpsRedirection();
 
 // Required for Authentication.
