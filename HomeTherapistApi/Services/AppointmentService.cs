@@ -54,6 +54,8 @@ namespace HomeTherapistApi.Services
         CustomerId = appointmentDto.CustomerId,
         CustomerPhone = appointmentDto.CustomerPhone,
         CustomerAddress = appointmentDto.CustomerAddress,
+        AgeGroup = appointmentDto.AgeGroup,
+        Gender = appointmentDto.Gender,
         Latitude = appointmentDto.Latitude,
         Longitude = appointmentDto.Longitude,
         IsComplete = false,
@@ -93,6 +95,10 @@ namespace HomeTherapistApi.Services
     public string CustomerPhone { get; set; }
     [Required]
     public string CustomerAddress { get; set; }
+    [Required]
+    public string Gender { get; set; }
+    [Required]
+    public string AgeGroup { get; set; }
     [Required]
     public decimal Latitude { get; set; }
     [Required]

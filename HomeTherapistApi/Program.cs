@@ -137,7 +137,7 @@ var securityRequirement = new OpenApiSecurityRequirement
 //     {
 //       options.AddPolicy("AllowFrontend", builder =>
 //       {
-//         builder.WithOrigins("http://localhost:3000") // 替換為您的前端應用程式的 URL
+//         builder.WithOrigins("http://localhost:3000")
 //               .AllowAnyHeader()
 //               .AllowAnyMethod();
 //       });

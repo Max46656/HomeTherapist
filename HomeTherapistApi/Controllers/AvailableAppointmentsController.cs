@@ -72,6 +72,13 @@ namespace HomeTherapistApi.Controllers
     {
       try
       {
+        var validGenders = new List<string> { "男", "女", "其他" };
+        if (!validGenders.Contains(appointmentInputDto.Gender))
+          return Ok(new ApiResponse<string> { IsSuccess = false, Message = appointmentInputDto.Gender + "是無效的性別值。" });
+        var validAgeGroups = new List<string> { "小於18", "18-25", "26-35", "36-45", "46-55", "56-65", "66-75", "大於75" };
+        if (!validAgeGroups.Contains(appointmentInputDto.AgeGroup))
+          return Ok(new ApiResponse<string> { IsSuccess = false, Message = appointmentInputDto.AgeGroup + "是無效的年齡組別值。" });
+
         var UserId = await GetRandomTherapistId(appointmentInputDto.SelectedDate, appointmentInputDto.Latitude, appointmentInputDto.Longitude);
         var appointmentDto = new AppointmentDto
         {
@@ -84,7 +91,9 @@ namespace HomeTherapistApi.Controllers
           Price = (double)(_context.Services.FirstOrDefault(a => a.Id == appointmentInputDto.ServiceId)?.Price!),
           StartDt = appointmentInputDto.SelectedDate,
           Latitude = (decimal)appointmentInputDto.Latitude!,
-          Longitude = (decimal)appointmentInputDto.Longitude!
+          Longitude = (decimal)appointmentInputDto.Longitude!,
+          Gender = appointmentInputDto.Gender,
+          AgeGroup = appointmentInputDto.AgeGroup
         };
 
         var appointment = _appointmentService.CreateAppointmentWithDetail(appointmentDto);
@@ -170,8 +179,39 @@ namespace HomeTherapistApi.Controllers
 
       return _therapistsInRange;
     }
+
+    // private async Task<List<User>> GetTherapistsInRange(double? latitude, double? longitude)
+    // {
+    //   const double EarthRadiusInKm = 6371.0;
+
+    //   var therapistsInRange = await _context.Users
+    //       .Where(user => user.Latitude != null && user.Longitude != null && user.Radius != null)
+    //       .ToListAsync();
+
+    //   var lat = latitude * Math.PI / 180.0;
+    //   var lon = longitude * Math.PI / 180.0;
+
+    //   therapistsInRange = therapistsInRange
+    //       .Where(user =>
+    //       {
+    //         var dLat = (double)user.Latitude!.Value * Math.PI / 180.0;
+    //         var dLon = (double)user.Longitude!.Value * Math.PI / 180.0;
+
+    //         var sdlat = Math.Sin((double)((dLat! - lat!) / 2));
+    //         var sdlon = Math.Sin((double)((dLon! - lon!) / 2));
+    //         var q = sdlat * sdlat + Math.Cos((double)lat!) * Math.Cos(dLat) * sdlon * sdlon;
+    //         var distance = 2 * EarthRadiusInKm * Math.Asin(Math.Sqrt(q));
+
+    //         return distance <= user.Radius!.Value / 3;
+    //       })
+    //       .ToList();
+
+    //   return therapistsInRange;
+    // }
+
     private async Task<List<User>> GetTherapistsInRange(double? latitude, double? longitude)
     {
+      // 不正確，但可以展示看起來更正確的結果
       const double EarthRadiusInKm = 6371.0;
       //以半正矢公式計算兩個經緯度之間的距離。
       var therapistsInRange = await _context.Users
@@ -179,7 +219,7 @@ namespace HomeTherapistApi.Controllers
           .Where(user => (2 * EarthRadiusInKm * Math.Asin(Math.Sqrt(
               Math.Pow(Math.Sin(((double)user.Latitude! - (double)latitude!) / 2), 2) +
               Math.Cos((double)user.Latitude!) * Math.Cos((double)latitude) * Math.Pow(Math.Sin(((double)user.Longitude! - (double)longitude!) / 2), 2)
-          ))) <= user.Radius!)
+          ))) <= user.Radius!.Value * 3)
           .ToListAsync();
 
       return therapistsInRange;
@@ -287,6 +327,8 @@ public class AppointmentInputDto
   public DateTime SelectedDate { get; set; }
   public double? Latitude { get; set; }
   public double? Longitude { get; set; }
+  public string Gender { get; set; }
+  public string AgeGroup { get; set; }
 }
 
 public class AvailableAppointmentDto

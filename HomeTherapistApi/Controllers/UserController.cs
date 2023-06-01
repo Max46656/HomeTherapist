@@ -145,7 +145,6 @@ public class UserController : ControllerBase
     return Ok(appointments);
   }
 
-
   [HttpGet("GetOrdersByUser")]
   public async Task<IActionResult> GetOrdersByUser()
   {
