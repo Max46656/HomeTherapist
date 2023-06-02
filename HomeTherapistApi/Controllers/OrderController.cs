@@ -83,7 +83,7 @@ namespace HomeTherapistApi.Controllers
          .ToListAsync();
 
       if (orders.Count == 0)
-        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不-訂單" });
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到訂單" });
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
@@ -111,11 +111,27 @@ namespace HomeTherapistApi.Controllers
          .ToListAsync();
 
       if (orders.Count == 0)
-        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不-訂單" });
+        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "找不到訂單" });
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
+    [HttpGet("gender")]
+    public async Task<Dictionary<string, double>> GetOrdersByAllGender()
+    {
+      var totalOrderCount = await _context.Orders.CountAsync();
+      var genderPercentage = new Dictionary<string, double>();
 
+      var genders = new List<string> { "男", "女", "其他" };
+
+      foreach (var gender in genders)
+      {
+        var genderOrderCount = await _context.Orders.CountAsync(o => o.Gender.Equals(gender));
+        var percentage = Math.Round((double)genderOrderCount / totalOrderCount * 100, 2);
+        genderPercentage.Add(gender, percentage);
+      }
+
+      return genderPercentage;
+    }
     [HttpGet("gender/{gender}")]
     public async Task<IActionResult> GetOrdersByGender(string gender)
     {
@@ -128,11 +144,27 @@ namespace HomeTherapistApi.Controllers
 
       var genderOrderCount = await _context.Orders.CountAsync(o => o.Gender.Equals(gender));
 
-      var percentage = Math.Round((double)genderOrderCount / totalOrderCount * 100, 2);
+      var percentage = Math.Round((double)genderOrderCount / totalOrderCount * 100, 3);
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = $"在全部的訂單中，你所查詢的條件佔{percentage.ToString("0.00")}%." });
     }
+    [HttpGet("agegroup")]
+    public async Task<Dictionary<string, double>> GetAgeGroupPercentage()
+    {
+      var totalOrderCount = await _context.Orders.CountAsync();
+      var ageGroupPercentage = new Dictionary<string, double>();
 
+      var ageGroups = new List<string> { "小於18", "18到25", "26到35", "36到45", "46到55", "56到65", "66到75", "大於75" };
+
+      foreach (var ageGroup in ageGroups)
+      {
+        var ageGroupOrderCount = await _context.Orders.CountAsync(o => o.AgeGroup.Equals(ageGroup));
+        var percentage = Math.Round((double)ageGroupOrderCount / totalOrderCount * 100, 3);
+        ageGroupPercentage.Add(ageGroup, percentage);
+      }
+
+      return ageGroupPercentage;
+    }
     [HttpGet("agegroup/{ageGroup}")]
     public async Task<IActionResult> GetOrdersByAgeGroup(string ageGroup)
     {
@@ -149,7 +181,28 @@ namespace HomeTherapistApi.Controllers
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = $"在全部的訂單中，你所查詢的條件佔{percentage.ToString("0.00")}%." });
     }
+    [HttpGet("genderAndAgeGroups")]
+    public async Task<Dictionary<string, double>> GetGenderAgeGroupPercentage()
+    {
+      var totalOrderCount = await _context.Orders.CountAsync();
+      var genderAgeGroupPercentage = new Dictionary<string, double>();
 
+      var genders = new List<string> { "男", "女", "其他" };
+      var ageGroups = new List<string> { "小於18", "18到25", "26到35", "36到45", "46到55", "56到65", "66到75", "大於75" };
+
+      foreach (var gender in genders)
+      {
+        foreach (var ageGroup in ageGroups)
+        {
+          var genderAgeGroupOrderCount = await _context.Orders.CountAsync(o => o.Gender.Equals(gender) && o.AgeGroup.Equals(ageGroup));
+          var percentage = Math.Round((double)genderAgeGroupOrderCount / totalOrderCount * 100, 2);
+          var key = $"{gender}/{ageGroup}";
+          genderAgeGroupPercentage.Add(key, percentage);
+        }
+      }
+
+      return genderAgeGroupPercentage;
+    }
 
     [HttpGet("gender/{gender}/agegroup/{ageGroup}")]
     public async Task<IActionResult> GetOrdersByGenderAndAgeGroup(string gender, string ageGroup)
@@ -176,14 +229,12 @@ namespace HomeTherapistApi.Controllers
 
     private bool IsValidGender(string gender)
     {
-      // 檢查性別是否為有效選項
       var validGenders = new List<string> { "男", "女", "其他" };
       return validGenders.Contains(gender, StringComparer.OrdinalIgnoreCase);
     }
 
     private bool IsValidAgeGroup(string ageGroup)
     {
-      // 檢查年齡層是否為有效選項
       var validAgeGroups = new List<string> { "小於18", "18-25", "26-35", "36-45", "46-55", "56-65", "66-75", "大於75" };
       return validAgeGroups.Contains(ageGroup, StringComparer.OrdinalIgnoreCase);
     }
