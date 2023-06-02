@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->enum('gender', ['男', '女', '其他'])->nullable();
-            $table->enum('age_group', ['小於18', '18-25', '26-35', '36-45', '46-55', '56-65', '66-75', '大於75'])->nullable();
+            $table->enum('age_group', ['小於18', '18到25', '26到35', '36到45', '46到55', '56到65', '66到75', '大於75'])->nullable();
             $table->boolean('is_complete');
             $table->timestamps();
         });
