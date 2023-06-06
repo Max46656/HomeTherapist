@@ -29,6 +29,7 @@ class AppointmentDetailCrudController extends CrudController
         CRUD::setModel(\App\Models\AppointmentDetail::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/appointment-detail');
         CRUD::setEntityNameStrings('appointment detail', 'appointment details');
+        $this->crud->denyAccess(['create', 'delete']);
     }
 
     /**
@@ -47,12 +48,12 @@ class AppointmentDetailCrudController extends CrudController
             'attribute' => 'appointment_id',
             'entity' => 'appointment',
             'model' => "App\Models\Appointment",
-            'column' => 'id', // 替換為關聯模型的主鍵欄位
+            'column' => 'id',
             'wrapper' => [
                 'href' => function ($crud, $column, $entry, $related_key) {
-                    $appointment = \App\Models\Appointment::find($related_key);
+                    $appointment = \App\Models\Appointment::find($column['value']);
                     if ($appointment) {
-                        return backpack_url('appointment/' . $appointment->id);
+                        return backpack_url('appointment/' . $appointment->id . '/show');
                     }
 
                     return backpack_url('appointment/' . $related_key);
@@ -63,8 +64,30 @@ class AppointmentDetailCrudController extends CrudController
                 return $entry->appointment->id ?? '-';
             },
         ]);
+        CRUD::addColumn([
+            'name' => 'service_id',
+            'label' => 'Service',
+            'type' => 'relationship',
+            'attribute' => 'service_id',
+            'entity' => 'service',
+            'model' => "App\Models\Service",
+            'column' => 'id',
+            'wrapper' => [
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    $service = \App\Models\Service::find($entry->service_id);
+                    if ($service) {
+                        return backpack_url('service/' . $entry->service_id . '/show');
+                    }
 
-        CRUD::column('service_id');
+                    return backpack_url('service/');
+                },
+                'target' => '_blank',
+            ],
+            'value' => function ($entry) {
+                return $entry->service->name ?? '-';
+            },
+        ]);
+        // CRUD::column('service_id');
         CRUD::column('price');
         CRUD::column('note');
         CRUD::column('created_at');

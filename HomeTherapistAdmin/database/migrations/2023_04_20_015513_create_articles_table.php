@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('subtitle')->nullable();
             $table->text('body');
+            $table->boolean('enabled')->default(true);
             $table->timestamps();
         });
     }

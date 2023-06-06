@@ -12,4 +12,6 @@ class TherapistOpenServices extends Pivot
     use HasFactory;
 
     protected $table = 'therapist_open_services';
+
+
 }

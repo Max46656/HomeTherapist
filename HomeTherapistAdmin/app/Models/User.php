@@ -126,7 +126,7 @@ class User extends Authenticatable
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function openServices()
+    public function services()
     {
         return $this->belongsToMany(Service::class, 'therapist_open_services', 'user_id', 'services_id')
             ->using(TherapistOpenService::class);

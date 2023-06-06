@@ -16,4 +16,8 @@ class AppointmentDetail extends Model
     {
         return $this->belongsTo(Appointment::class);
     }
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
 }

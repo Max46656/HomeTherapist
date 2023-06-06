@@ -30,7 +30,6 @@ class Order extends Model
     {
         return $this->belongsTo(User::class, 'user_id', 'staff_ID');
     }
-
     public function feedback(): HasOne
     {
         return $this->hasOne(Feedback::class);

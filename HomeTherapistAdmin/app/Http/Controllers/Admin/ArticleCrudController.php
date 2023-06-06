@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\ArticleRequest;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 
@@ -29,6 +28,9 @@ class ArticleCrudController extends CrudController
         CRUD::setModel(\App\Models\Article::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/article');
         CRUD::setEntityNameStrings('article', 'articles');
+        $this->crud->denyAccess(['create', 'delete']);
+        // $this->crud->enableExportButtons();
+
     }
 
     /**
@@ -39,7 +41,25 @@ class ArticleCrudController extends CrudController
      */
     protected function setupListOperation()
     {
-        CRUD::column('user_id');
+        CRUD::column('user_id')
+            ->type('relationship')
+            ->attribute('user.username')
+            ->label('User')
+            ->wrapper([
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    $user = \App\Models\User::where('staff_id', $entry->user_id)->first();
+                    if ($user) {
+                        return backpack_url('user/' . $user->id . '/show');
+                    }
+                    return backpack_url('user/');
+                },
+                'target' => '_blank',
+            ])
+            ->value(function ($entry) {
+                $user = \App\Models\User::where('staff_id', $entry->user_id)->first();
+                return $user->username ?? '-';
+            });
+
         CRUD::column('title');
         CRUD::column('subtitle');
         CRUD::column('body');
@@ -62,13 +82,7 @@ class ArticleCrudController extends CrudController
     protected function setupCreateOperation()
     {
         CRUD::setValidation(ArticleRequest::class);
-
-        CRUD::field('user_id')
-            ->attribute('staff_id')
-            ->type('select')
-            ->label('User');
-
-        // CRUD::field('user_id');
+        CRUD::field('user_id');
         CRUD::field('title');
         CRUD::field('subtitle');
         CRUD::field('body');

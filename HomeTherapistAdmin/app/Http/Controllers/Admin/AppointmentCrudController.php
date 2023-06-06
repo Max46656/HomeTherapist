@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\AppointmentRequest;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
+use Backpack\CRUD\app\Library\Widget;
 
 /**
  * Class AppointmentCrudController
@@ -29,6 +29,8 @@ class AppointmentCrudController extends CrudController
         CRUD::setModel(\App\Models\Appointment::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/appointment');
         CRUD::setEntityNameStrings('appointment', 'appointments');
+        $this->crud->denyAccess(['create', 'delete']);
+
     }
 
     /**
@@ -39,6 +41,21 @@ class AppointmentCrudController extends CrudController
      */
     protected function setupListOperation()
     {
+        $completeAppointmentCount = \App\Models\Appointment::
+            where('is_complete', true)->count();
+
+        Widget::add()->to('before_content')->type('div')->class('row')->content([
+
+            Widget::make()
+                ->type('progress')
+                ->class('card border-0 text-white bg-primary')
+                ->progressClass('progress-bar')
+                ->value($completeAppointmentCount)
+                ->description('已完成預約')
+                ->progress(100 * (int) $completeAppointmentCount / 1000)
+                ->hint(1000 - $completeAppointmentCount % 1000 . '個預約到達下一個里程碑。'),
+        ]);
+
         // CRUD::column('user_id');
         CRUD::column('user_id')
             ->type('relationship')
@@ -46,27 +63,50 @@ class AppointmentCrudController extends CrudController
             ->label('User')
             ->wrapper([
                 'href' => function ($crud, $column, $entry, $related_key) {
-                    $user = \App\Models\User::find($related_key);
+                    $user = \App\Models\User::where('staff_id', $entry->user_id)->first();
                     if ($user) {
-                        return backpack_url('user/' . $user->id);
+                        return backpack_url('user/' . $user->id . '/show');
                     }
-
-                    return backpack_url('user/' . $related_key);
-                    // return '#';
+                    return backpack_url('user/');
                 },
                 'target' => '_blank',
             ])
             ->value(function ($entry) {
-                return $entry->user->staff_id ?? '-';
+                $user = \App\Models\User::where('staff_id', $entry->user_id)->first();
+                return $user->username ?? '-';
             });
-
-        CRUD::column('start_dt');
+        CRUD::column('start_dt')
+            ->type('relationship')
+            ->attribute('calendar.Dt')
+            ->label('Calendar')
+            ->wrapper([
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    // dump($entry->start_dt);
+                    $date_time = \App\Models\Calendar::where('Dt', $entry->start_dt)->first();
+                    if ($date_time) {
+                        // dump($date_time);
+                        return backpack_url('calendar/' . $date_time->id . '/show');
+                    }
+                    return backpack_url('user/');
+                },
+                'target' => '_blank',
+            ])
+            ->value(function ($entry) {
+                return $entry->start_dt ?? '-';
+            });
         CRUD::column('customer_ID');
         CRUD::column('customer_phone');
-        CRUD::column('customer_address');
+        CRUD::column('customer_address')
+            ->wrapper([
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    $googleMapsLink = "https://www.google.com/maps/search/?api=1&query=" . urlencode($entry->customer_address);
+                    return $googleMapsLink;
+                },
+                'target' => '_blank',
+            ]);
+        CRUD::column('is_complete');
         CRUD::column('latitude');
         CRUD::column('longitude');
-        CRUD::column('is_complete');
         CRUD::column('created_at');
         CRUD::column('updated_at');
 
@@ -85,14 +125,10 @@ class AppointmentCrudController extends CrudController
      */
     protected function setupCreateOperation()
     {
-        CRUD::setValidation(AppointmentRequest::class);
 
-        CRUD::field('user_id')
-            ->attribute('staff_id')
-            ->type('select')
-            ->label('User');
-
-        // CRUD::field('user_id');
+        // CRUD::setValidation(AppointmentRequest::class);
+        CRUD::setValidation();
+        CRUD::field('user_id');
         CRUD::field('start_dt');
         CRUD::field('customer_ID');
         CRUD::field('customer_phone');

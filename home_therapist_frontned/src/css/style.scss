@@ -1,0 +1,45 @@
+$primay:#bafff2;
+$secondry:#69ffed;
+$yellow:#fff566;
+$yellow-dark:#fadb14;
+$red:#ff4d4f;
+$red-dark:#f5222d;
+.color_1{
+background-color: $primay;
+background-color: #16f1d7;
+box-shadow: rgba(0,0,0,0.8);
+
+}
+.color_2{
+background-color: $secondry;
+
+}
+.btn-common{
+    background-color: $primay;
+    box-shadow: rgba(0,0,0,0.8);
+    color:#2f2e2e;
+    &:hover{
+        background-color: #16f1d7;
+    color:#767575;
+
+    
+    }
+}
+.small-edit{
+     background-color: $yellow;
+     &:hover{
+        background-color: $yellow-dark;
+    }
+ }
+.small-del{
+    background-color: $red;
+    &:hover{
+        background-color: $red-dark;
+    
+      
+    }
+    
+}
+.tx_shadow{
+    text-shadow: $primay 1px 0 8px;
+}
