@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Requests\TherapistOpenServicesRequest;
 use App\Models\Service;
 use App\Models\TherapistOpenServices;
+use App\Models\User;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Backpack\CRUD\app\Library\Widget;
@@ -34,6 +35,26 @@ class TherapistOpenServicesCrudController extends CrudController
         CRUD::setRoute(config('backpack.base.route_prefix') . '/therapist-open-services');
         CRUD::setEntityNameStrings('therapist open services', 'therapist open services');
         $this->crud->denyAccess(['create', 'update', 'delete']);
+        // $this->crud->addFilter([
+        //     'type' => 'text',
+        //     'name' => 'username',
+        //     'label' => 'Username',
+        // ], function ($value) {
+        //     $this->crud->query = $this->crud->query->whereHas('user', function ($query) use ($value) {
+        //         $query->where('username', 'like', '%' . $value . '%');
+        //     });
+        // });
+
+        // $this->crud->addFilter([
+        //     'type' => 'text',
+        //     'name' => 'service_name',
+        //     'label' => 'Service Name',
+        // ], function ($value) {
+        //     $this->crud->query = $this->crud->query->whereHas('service', function ($query) use ($value) {
+        //         $query->where('name', 'like', '%' . $value . '%');
+        //     });
+        // });
+
     }
 
     /**
@@ -94,7 +115,8 @@ class TherapistOpenServicesCrudController extends CrudController
             ->value(function ($entry) {
                 $service = \App\Models\Service::find($entry->service_id);
                 return $service->name ?? '-';
-            });
+            })->filterType('select')
+            ->filterSelectOptions(Service::pluck('name', 'id')->toArray());
 
         CRUD::column('user_id')
             ->type('relationship')
@@ -113,7 +135,8 @@ class TherapistOpenServicesCrudController extends CrudController
             ->value(function ($entry) {
                 $user = \App\Models\User::where('staff_id', $entry->user_id)->first();
                 return $user->username ?? '-';
-            });
+            })->filterType('select')
+            ->filterSelectOptions(User::pluck('username', 'staff_id')->toArray());
 
         CRUD::column('created_at');
         CRUD::column('updated_at');

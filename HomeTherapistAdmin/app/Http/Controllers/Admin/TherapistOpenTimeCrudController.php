@@ -33,6 +33,16 @@ class TherapistOpenTimeCrudController extends CrudController
         CRUD::setRoute(config('backpack.base.route_prefix') . '/therapist-open-time');
         CRUD::setEntityNameStrings('therapist open time', 'therapist open times');
         $this->crud->denyAccess(['create', 'update', 'delete']);
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+
+        $this->crud->addClause('whereMonth', 'start_dt', $currentMonth);
+        $this->crud->addClause('whereYear', 'start_dt', $currentYear);
+
+        $this->crud->orderBy('start_dt', 'asc');
+        $this->crud->orderBy('user_id', 'asc');
+        $this->crud->enablePersistentTable();
+        $this->crud->setOperationSetting('persistentTableDuration', 120);
     }
 
     /**
@@ -43,11 +53,11 @@ class TherapistOpenTimeCrudController extends CrudController
      */
     protected function setupListOperation()
     {
+        CRUD::setOperationSetting('showEntryCount', false);
 
-        $currentMonth = Carbon::now()->month;
+        $currentDay = Carbon::now()->day;
+        $userCountDay = \App\Models\TherapistOpenTime::whereDay('start_dt', $currentDay)->distinct()->get('user_id')->count();
 
-        $userCount = \App\Models\TherapistOpenTime::whereMonth('start_dt', $currentMonth)->distinct()->get('user_id')->count();
-        dump($userCount);
         Widget::add()
             ->to('before_content')
             ->type('div')
@@ -57,8 +67,10 @@ class TherapistOpenTimeCrudController extends CrudController
                     'type' => 'card',
                     'class' => 'card bg-dark text-white',
                     'wrapper' => ['class' => 'col-sm-3 col-md-3'],
-                    'header' => '本月有資料的使用者數量',
-                    'body' => $userCount . ' 位使用者',
+                    'content' => [
+                        'header' => '本日開放預約的治療師',
+                        'body' => '共有' . $userCountDay . ' 位',
+                    ],
                 ]),
             ]);
 
