@@ -32,14 +32,29 @@ namespace HomeTherapistApi.Controllers
           .Where(a => a.CustomerId == IdNumber && a.CustomerPhone == Phone)
           .Select(a => new
           {
-            Appointment = a,
+            a.Id,
+            a.StartDt,
+            a.CustomerId,
+            a.CustomerPhone,
+            a.CustomerAddress,
+            a.Gender,
+            a.AgeGroup,
             AppointmentDetails = a.AppointmentDetails.Select(ad => new
             {
-              AppointmentDetail = ad,
-              Service = ad.Service
+              ad.ServiceId,
+              ad.Price,
+              ad.Note,
+              Service = new
+              {
+                ad.Service.Id,
+                ad.Service.Name,
+                ad.Service.Price,
+              }
             }).ToList(),
-            User = a.User,
-            Calendar = a.Calendar
+            User = new
+            {
+              a.User.UserName,
+            },
           })
           .ToListAsync();
 
@@ -47,8 +62,8 @@ namespace HomeTherapistApi.Controllers
         return NotFound(new ApiResponse<object> { IsSuccess = false, Message = $"查詢身分證字號為 '{IdNumber}' 且電話號碼為 '{Phone}' 的預約失敗。" });
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = $"查詢身分證字號為 '{IdNumber}' 且電話號碼為 '{Phone}' 的預約已完成。", Data = appointments });
-
     }
+
 
     [HttpPatch("{IdNumber}")]
     public async Task<IActionResult> Update([FromBody] JsonPatchDocument<AppointmentUpdateDto> patchDocument, string IdNumber, [FromQuery] string Phone, [FromQuery] DateTime? date)
