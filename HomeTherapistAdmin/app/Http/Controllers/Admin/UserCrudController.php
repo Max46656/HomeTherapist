@@ -46,7 +46,6 @@ class UserCrudController extends CrudController
     protected function setupListOperation()
     {
         $userCount = \App\Models\User::count();
-        // $userInTaipei = \App\Models\User::where();
         $userInTaipei = User::whereRaw("address regexp '臺北'")->get()->count();
         $userInNewTaipei = User::whereRaw("address regexp '新北'")->get()->count();
         $userInKeelung = User::whereRaw("address regexp '基隆'")->get()->count();
@@ -99,6 +98,7 @@ class UserCrudController extends CrudController
                 },
                 'target' => '_blank',
             ]);
+
         CRUD::column('average_rating')
             ->label('平均評價')
             ->type('text')
@@ -111,6 +111,18 @@ class UserCrudController extends CrudController
                     return "0.0";
                 }
                 return round($averageRating, 2);
+            });
+        CRUD::column('complete_order')
+            ->label('完成訂單數')
+            ->type('number')
+            ->value(function ($entry) {
+                $complete_order = DB::table('orders')
+                    ->where('user_id', $entry->staff_id)
+                    ->count();
+                if ($complete_order == null) {
+                    return "0";
+                }
+                return $complete_order;
             });
 
         CRUD::column('phone_number');

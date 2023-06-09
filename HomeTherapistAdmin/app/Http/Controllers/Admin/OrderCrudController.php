@@ -43,6 +43,12 @@ class OrderCrudController extends CrudController
     {
         $completeOrderCount = \App\Models\Order::
             where('is_complete', true)->count();
+        $orderInTaipei = \App\Models\Order::whereRaw("customer_address regexp '臺北'")->get()->count();
+        $orderInNewTaipei = \App\Models\Order::whereRaw("customer_address regexp '新北'")->get()->count();
+        $orderInKeelung = \App\Models\Order::whereRaw("customer_address regexp '基隆'")->get()->count();
+        $orderInTaoyuan = \App\Models\Order::whereRaw("customer_address regexp '桃園'")->get()->count();
+        $orderInHsinchu = \App\Models\Order::whereRaw("customer_address regexp '新竹'")->get()->count();
+        $orderInMiaoli = \App\Models\Order::whereRaw("customer_address regexp '新竹'")->get()->count();
 
         Widget::add()->to('before_content')->type('div')->class('row')->content([
 
@@ -54,6 +60,28 @@ class OrderCrudController extends CrudController
                 ->description('已完成訂單')
                 ->progress(100 * (int) $completeOrderCount / 1000)
                 ->hint(1000 - $completeOrderCount % 1000 . '個訂單到達下一個里程碑。'),
+            Widget::make(
+                [
+                    'type' => 'card',
+                    'class' => 'card bg-dark text-white',
+                    'wrapper' => ['class' => 'col-sm-3 col-md-3'],
+                    'content' => [
+                        'header' => '北北基訂單統計',
+                        'body' => "基隆" . $orderInKeelung . "台北" . $orderInTaipei . "新北" . $orderInNewTaipei,
+                    ],
+                ]
+            ),
+            Widget::make(
+                [
+                    'type' => 'card',
+                    'class' => 'card bg-dark text-white',
+                    'wrapper' => ['class' => 'col-sm-3 col-md-3'],
+                    'content' => [
+                        'header' => '桃竹苗訂單統計',
+                        'body' => "桃園" . $orderInTaoyuan . "新竹" . $orderInHsinchu . "苗栗" . $orderInMiaoli,
+                    ],
+                ]
+            ),
         ]);
 
         CRUD::column('user_id')
