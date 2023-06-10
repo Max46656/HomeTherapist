@@ -32,7 +32,7 @@ namespace HomeTherapistApi.Controllers
     // }
 
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<ActionResult<ApiResponse<object>>> Get()
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請登入" });
@@ -55,12 +55,12 @@ namespace HomeTherapistApi.Controllers
          .ToListAsync();
 
       if (orders.Count == 0)
-        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "使用者沒有訂單" });
+        return NotFound(new ApiResponse<string> { IsSuccess = false, Message = "使用者沒有訂單" });
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
     [HttpGet("{IdNumber}")]
-    public async Task<IActionResult> GetOrderByIdNumber(string IdNumber)
+    public async Task<ActionResult<ApiResponse<object>>> GetOrderByIdNumber(string IdNumber)
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請登入" });
@@ -88,7 +88,7 @@ namespace HomeTherapistApi.Controllers
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "取得訂單成功", Data = orders });
     }
     [HttpGet("{Id}")]
-    public async Task<IActionResult> GetOrderById(ulong Id)
+    public async Task<ActionResult<ApiResponse<object>>> GetOrderById(ulong Id)
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請登入" });
@@ -205,7 +205,7 @@ namespace HomeTherapistApi.Controllers
     }
 
     [HttpGet("gender/{gender}/agegroup/{ageGroup}")]
-    public async Task<IActionResult> GetOrdersByGenderAndAgeGroup(string gender, string ageGroup)
+    public async Task<ActionResult<ApiResponse<string>>> GetOrdersByGenderAndAgeGroup(string gender, string ageGroup)
     {
       var totalOrderCount = await _context.Orders.CountAsync();
 
@@ -224,7 +224,7 @@ namespace HomeTherapistApi.Controllers
 
       var percentage = Math.Round((double)genderAndAgeGroupOrderCount / totalOrderCount * 100, 2);
 
-      return Ok(new ApiResponse<object> { IsSuccess = true, Message = $"在全部的訂單中，你所查詢的條件佔{percentage.ToString("0.00")}%." });
+      return Ok(new ApiResponse<string> { IsSuccess = true, Message = $"在全部的訂單中，你所查詢的條件佔{percentage.ToString("0.00")}%." });
     }
 
     private bool IsValidGender(string gender)
@@ -240,7 +240,7 @@ namespace HomeTherapistApi.Controllers
     }
 
     [HttpPost]
-    public IActionResult CreateOrderWithDetail(OrderDto orderDto)
+    public async Task<ActionResult<ApiResponse<object>>> CreateOrderWithDetail(OrderDto orderDto)
     {
       var missingFields = new List<string>();
 
@@ -266,7 +266,6 @@ namespace HomeTherapistApi.Controllers
 
       if (ValidatorService.ValidateTaiwanId(orderDto.CustomerId))
         return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "身份證字號錯誤。" });
-
 
       var order = new Order
       {
@@ -295,10 +294,11 @@ namespace HomeTherapistApi.Controllers
       orderDetail.Order = order;
 
       _context.Orders.Add(order);
-      _context.SaveChanges();
+      await _context.SaveChangesAsync();
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "訂單創建成功", Data = order });
     }
+
     public class OrderDto
     {
       [Required]
@@ -321,7 +321,5 @@ namespace HomeTherapistApi.Controllers
       public double Price { get; set; }
       public string? Note { get; set; }
     }
-
-
   }
 }

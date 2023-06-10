@@ -26,7 +26,7 @@ namespace HomeTherapistApi.Controllers
 
     // GET: api/TherapistOpenService
     [HttpGet]
-    public async Task<IActionResult> GetTherapistOpenServices()
+    public async Task<ActionResult<ApiResponse<List<TherapistOpenService>>>> GetTherapistOpenServices()
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null)
@@ -45,7 +45,7 @@ namespace HomeTherapistApi.Controllers
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddTherapistOpenService(ulong serviceId)
+    public async Task<ActionResult<ApiResponse<TherapistOpenService>>> AddTherapistOpenService(ulong serviceId)
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null)
@@ -89,7 +89,7 @@ namespace HomeTherapistApi.Controllers
     }
 
     [HttpDelete]
-    public async Task<IActionResult> DeleteTherapistOpenService(ulong? serviceId)
+    public async Task<ActionResult<ApiResponse<TherapistOpenService>>> DeleteTherapistOpenService(ulong? serviceId)
     {
       if (serviceId == null)
         return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供欲刪除的服務ID" });
@@ -114,14 +114,15 @@ namespace HomeTherapistApi.Controllers
         Data = therapistOpenService
       });
     }
+    public class TherapistOpenServiceDto
+    {
+      public string UserId { get; set; } = null!;
+      public ulong? ServiceId { get; set; }
+      public User? User { get; set; } = null!;
+      public Service? Service { get; set; } = null!;
+      public DateTime? CreatedAt { get; set; }
+      public DateTime? UpdatedAt { get; set; }
+    }
   }
-  public class TherapistOpenServiceDto
-  {
-    public string UserId { get; set; } = null!;
-    public ulong? ServiceId { get; set; }
-    public User? User { get; set; } = null!;
-    public Service? Service { get; set; } = null!;
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-  }
+
 }

@@ -313,28 +313,29 @@ namespace HomeTherapistApi.Controllers
 
       return availableAppointments;
     }
+    public class AppointmentInputDto
+    {
+      public ulong ServiceId { get; set; }
+      public string CustomerId { get; set; }
+      public string CustomerPhone { get; set; }
+      public string CustomerAddress { get; set; }
+      public string Note { get; set; }
+      public DateTime SelectedDate { get; set; }
+      public double? Latitude { get; set; }
+      public double? Longitude { get; set; }
+      public string Gender { get; set; }
+      public string AgeGroup { get; set; }
+    }
+
+    public class AvailableAppointmentDto
+    {
+      public DateTime StartDt { get; set; }
+      public DateTime EndDt { get; set; }
+      public TherapistOpenService? TherapistOpenService { get; set; }
+      public User? Therapist { get; set; }
+    }
   }
 
 
 }
-public class AppointmentInputDto
-{
-  public ulong ServiceId { get; set; }
-  public string CustomerId { get; set; }
-  public string CustomerPhone { get; set; }
-  public string CustomerAddress { get; set; }
-  public string Note { get; set; }
-  public DateTime SelectedDate { get; set; }
-  public double? Latitude { get; set; }
-  public double? Longitude { get; set; }
-  public string Gender { get; set; }
-  public string AgeGroup { get; set; }
-}
 
-public class AvailableAppointmentDto
-{
-  public DateTime StartDt { get; set; }
-  public DateTime EndDt { get; set; }
-  public TherapistOpenService? TherapistOpenService { get; set; }
-  public User? Therapist { get; set; }
-}

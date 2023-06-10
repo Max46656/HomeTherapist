@@ -26,7 +26,7 @@ namespace HomeTherapistApi.Controllers
 
     // GET: api/TherapistOpenTime
     [HttpGet]
-    public async Task<IActionResult> GetTherapistOpenTimes()
+    public async Task<ActionResult<ApiResponse<List<TherapistOpenTime>>>> GetTherapistOpenTimes()
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null)
@@ -49,7 +49,7 @@ namespace HomeTherapistApi.Controllers
     // }
     // POST: api/TherapistOpenTime
     [HttpPost]
-    public async Task<IActionResult> PostTherapistOpenTime(DateTime? startDt)
+    public async Task<ActionResult<ApiResponse<TherapistOpenTime>>> PostTherapistOpenTime(DateTime? startDt)
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null)
@@ -90,7 +90,7 @@ namespace HomeTherapistApi.Controllers
     }
     // DELETE: api/TherapistOpenTime/5
     [HttpDelete]
-    public async Task<IActionResult> DeleteTherapistOpenTime(DateTime? startDt)
+    public async Task<ActionResult<ApiResponse<TherapistOpenTime>>> DeleteTherapistOpenTime(DateTime? startDt)
     {
       if (startDt == null)
         return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請提供欲刪除的日期與時間" });
@@ -115,14 +115,15 @@ namespace HomeTherapistApi.Controllers
         Data = therapistOpenTime
       });
     }
+    public class TherapistOpenTimeDto
+    {
+      public string UserId { get; set; } = null!;
+      public DateTime? StartDt { get; set; }
+      public User? User { get; set; } = null!;
+      public Calendar? Calendar { get; set; } = null!;
+      public DateTime? CreatedAt { get; set; }
+      public DateTime? UpdatedAt { get; set; }
+    }
   }
-  public class TherapistOpenTimeDto
-  {
-    public string UserId { get; set; } = null!;
-    public DateTime? StartDt { get; set; }
-    public User? User { get; set; } = null!;
-    public Calendar? Calendar { get; set; } = null!;
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-  }
+
 }

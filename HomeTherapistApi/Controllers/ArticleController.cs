@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 namespace HomeTherapistApi.Controllers
 {
   [Authorize]
-  [Route("api/[controller]")]
   [ApiController]
+  [Route("api/[controller]")]
   public class ArticlesController : ControllerBase
   {
     private readonly HometherapistContext _context;
@@ -124,7 +124,7 @@ namespace HomeTherapistApi.Controllers
           throw;
       }
 
-      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "更新文章成功", Data = article });
+      return Ok(new ApiResponse<Article> { IsSuccess = true, Message = "更新文章成功", Data = article });
     }
 
     [HttpDelete("{id}")]
@@ -147,28 +147,29 @@ namespace HomeTherapistApi.Controllers
     {
       return _context.Articles.Any(e => e.Id == id);
     }
+    public class InputArticleDto
+    {
+
+      public string Title { get; set; } = null!;
+
+      public string? Subtitle { get; set; }
+
+      public string Body { get; set; } = null!;
+    }
+    public class ArticleDto
+    {
+      public string UserId { get; set; } = null!;
+
+      public string Title { get; set; } = null!;
+
+      public string? Subtitle { get; set; }
+
+      public string Body { get; set; } = null!;
+
+      public DateTime? CreatedAt { get; set; }
+
+      public DateTime? UpdatedAt { get; set; }
+    }
   }
-  public class InputArticleDto
-  {
 
-    public string Title { get; set; } = null!;
-
-    public string? Subtitle { get; set; }
-
-    public string Body { get; set; } = null!;
-  }
-  public class ArticleDto
-  {
-    public string UserId { get; set; } = null!;
-
-    public string Title { get; set; } = null!;
-
-    public string? Subtitle { get; set; }
-
-    public string Body { get; set; } = null!;
-
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
-  }
 }

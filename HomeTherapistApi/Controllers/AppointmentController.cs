@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.JsonPatch;
 using HomeTherapistApi.Services;
 using HomeTherapistApi.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -24,7 +28,7 @@ namespace HomeTherapistApi.Controllers
     }
 
     [HttpGet("{IdNumber}")]
-    public async Task<ActionResult<ApiResponse<object>>> Get(string IdNumber, string Phone)
+    public async Task<ActionResult<ApiResponse<Appointment>>> Get(string IdNumber, string Phone)
     {
       var appointments = await _context.Appointments
           .Include(a => a.AppointmentDetails)
@@ -66,14 +70,14 @@ namespace HomeTherapistApi.Controllers
 
 
     [HttpPatch("{IdNumber}")]
-    public async Task<IActionResult> Update([FromBody] JsonPatchDocument<AppointmentUpdateDto> patchDocument, string IdNumber, [FromQuery] string Phone, [FromQuery] DateTime? date)
+    public async Task<ActionResult<ApiResponse<object>>> Update([FromBody] JsonPatchDocument<AppointmentUpdateDto> patchDocument, string IdNumber, [FromQuery] string Phone, [FromQuery] DateTime? date)
     {
       var appointment = await _context.Appointments
           .Include(a => a.AppointmentDetails)
           .FirstOrDefaultAsync(a => a.CustomerId == IdNumber && a.CustomerPhone == Phone && a.StartDt == date!.Value);
 
       if (appointment == null)
-        return NotFound(new ApiResponse<object> { IsSuccess = false, Message = $"更新身分證字號為 '{IdNumber}'、電話號碼為 '{Phone}' 且日期為 '{date}' 的預約失敗。" });
+        return NotFound(new ApiResponse<string> { IsSuccess = false, Message = $"更新身分證字號為 '{IdNumber}'、電話號碼為 '{Phone}' 且日期為 '{date}' 的預約失敗。" });
 
       var appointmentDto = new AppointmentUpdateDto
       {
@@ -104,7 +108,7 @@ namespace HomeTherapistApi.Controllers
 
       await _context.SaveChangesAsync();
 
-      return Ok(new ApiResponse<object> { IsSuccess = true, Message = $"更新身分證字號為 '{IdNumber}'、電話號碼為 '{Phone}' 且日期為 '{date}' 的預約已完成。" });
+      return Ok(new ApiResponse<string> { IsSuccess = true, Message = $"更新身分證字號為 '{IdNumber}'、電話號碼為 '{Phone}' 且日期為 '{date}' 的預約已完成。" });
     }
     // [
     //   {
@@ -141,7 +145,7 @@ namespace HomeTherapistApi.Controllers
 
 
     [HttpDelete("{IdNumber}")]
-    public async Task<IActionResult> Delete(string IdNumber, string Phone, DateTime? date)
+    public async Task<ActionResult<ApiResponse<string>>> Delete(string IdNumber, string Phone, DateTime? date)
     {
       var appointment = await _context.Appointments
           .Include(a => a.AppointmentDetails)
@@ -156,14 +160,17 @@ namespace HomeTherapistApi.Controllers
 
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = $"刪除身分證字號為為 '{IdNumber}'、電話號碼為 '{Phone}' 且日期為 '{date}' 的預約已完成。" });
     }
+    public class AppointmentUpdateDto
+    {
+      public string CustomerId { get; set; } = null!;
+      public string CustomerPhone { get; set; } = null!;
+      public string CustomerAddress { get; set; } = null!;
+      public string? Gender { get; set; }
+      public string? AgeGroup { get; set; }
+      public string Note { get; set; }
+    }
+
+
   }
-  public partial class AppointmentUpdateDto
-  {
-    public string CustomerId { get; set; } = null!;
-    public string CustomerPhone { get; set; } = null!;
-    public string CustomerAddress { get; set; } = null!;
-    public string? Gender { get; set; }
-    public string? AgeGroup { get; set; }
-    public string Note { get; set; }
-  }
+
 }

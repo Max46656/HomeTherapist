@@ -14,6 +14,7 @@ using HomeTherapistApi.Utilities;
 using MimeKit;
 using System.Configuration;
 using MailKit.Net.Smtp;
+using OpenTracing;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -21,59 +22,64 @@ namespace HomeTherapistApi.Controllers
   [Route("api/[controller]")]
   public class AuthController : ControllerBase
   {
+
     private readonly IConfiguration _configuration;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly ITracer _tracer;
 
-    public AuthController(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, IPasswordHasher<User> passwordHasher)
+    public AuthController(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, IPasswordHasher<User> passwordHasher, ITracer tracer)
     {
       _configuration = configuration;
       _userManager = userManager;
       _signInManager = signInManager;
       _passwordHasher = passwordHasher;
+      _tracer = tracer;
     }
+
     // 測試用Hash密碼生成
     // var passwordHasher = new PasswordHasher<User>();
     // var hashedPassword = passwordHasher.HashPassword(null, "123456");
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto model)
+    public async Task<ActionResult<ApiResponse<object>>> Login(LoginDto model)
     {
+      // var span = _tracer.BuildSpan("Home_Controller_Get_Action").Start();
       if (model.Email == null || model.Password == null)
-        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "Email和密碼不能為空" });
+        return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "Email和密碼不能為空" });
 
       var user = await _userManager.FindByEmailAsync(model.Email);
 
       if (user == null || user.PasswordHash == null)
-        return Unauthorized(new ApiResponse<object> { IsSuccess = false, Message = "未授權，請檢查帳號密碼" });
+        return Unauthorized(new ApiResponse<string> { IsSuccess = false, Message = "未授權，請檢查帳號密碼" });
 
       var passwordHasher = new PasswordHasher<User>();
       var verificationResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
 
       if (verificationResult == PasswordVerificationResult.Failed)
-        return Unauthorized(new ApiResponse<object> { IsSuccess = false, Message = "未授權，請檢查帳號密碼" });
+        return Unauthorized(new ApiResponse<string> { IsSuccess = false, Message = "未授權，請檢查帳號密碼" });
 
       var token = GenerateJwtToken(user);
-
+      // span.Finish();
       return Ok(new ApiResponse<object> { IsSuccess = true, Message = "登入成功", Data = new { token } });
     }
     [Authorize]
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout()
+    public async Task<ActionResult<ApiResponse<string>>> Logout()
     {
       await _signInManager.SignOutAsync();
-      return Ok(new ApiResponse<object> { IsSuccess = true, Message = "登出成功" });
+      return Ok(new ApiResponse<string> { IsSuccess = true, Message = "登出成功" });
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterDto model)
+    public async Task<ActionResult<ApiResponse<object>>> Register(RegisterDto model)
     {
       if (model.UserName == null || model.Email == null || model.StaffId == null || model.Password == null)
-        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請填寫所有必填欄位" });
+        return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "請填寫所有必填欄位" });
 
       var existingUser = await _userManager.FindByEmailAsync(model.Email);
       if (existingUser != null)
-        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "該Email已被註冊" });
+        return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "該Email已被註冊" });
 
       var newUser = new User
       {
@@ -143,7 +149,7 @@ namespace HomeTherapistApi.Controllers
     }
     [Authorize]
     [HttpPost("ChangePassword")]
-    public async Task<IActionResult> ChangePassword(PasswordChangeDto passwordChange)
+    public async Task<ActionResult<ApiResponse<string>>> ChangePassword(PasswordChangeDto passwordChange)
     {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
       if (userId == null)
@@ -185,41 +191,42 @@ namespace HomeTherapistApi.Controllers
 
       return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    public class LoginDto
+    {
+      [Required(ErrorMessage = "Email is required")]
+      public string? Email { get; set; }
+
+      [Required(ErrorMessage = "Password is required")]
+      public string? Password { get; set; }
+    }
+    public class RegisterDto
+    {
+      [Required(ErrorMessage = "Email is required")]
+      [EmailAddress(ErrorMessage = "Invalid email address")]
+      public string? Email { get; set; }
+
+      [Required(ErrorMessage = "StaffId is required")]
+      public string? StaffId { get; set; }
+      [Required(ErrorMessage = "Username is required")]
+      public string? UserName { get; set; }
+
+      [Required(ErrorMessage = "Password is required")]
+      [MinLength(6, ErrorMessage = "Password must be at least 6 characters long")]
+      public string? Password { get; set; }
+
+      [Compare("Password", ErrorMessage = "Passwords do not match")]
+      public string? ConfirmPassword { get; set; }
+    }
+    public class PasswordChangeDto
+    {
+      [Required]
+      public string CurrentPassword { get; set; }
+
+      [Required]
+      [MinLength(6)]
+      public string NewPassword { get; set; }
+    }
   }
 
-  public class LoginDto
-  {
-    [Required(ErrorMessage = "Email is required")]
-    public string? Email { get; set; }
 
-    [Required(ErrorMessage = "Password is required")]
-    public string? Password { get; set; }
-  }
-  public class RegisterDto
-  {
-    [Required(ErrorMessage = "Email is required")]
-    [EmailAddress(ErrorMessage = "Invalid email address")]
-    public string? Email { get; set; }
-
-    [Required(ErrorMessage = "StaffId is required")]
-    public string? StaffId { get; set; }
-    [Required(ErrorMessage = "Username is required")]
-    public string? UserName { get; set; }
-
-    [Required(ErrorMessage = "Password is required")]
-    [MinLength(6, ErrorMessage = "Password must be at least 6 characters long")]
-    public string? Password { get; set; }
-
-    [Compare("Password", ErrorMessage = "Passwords do not match")]
-    public string? ConfirmPassword { get; set; }
-  }
-  public class PasswordChangeDto
-  {
-    [Required]
-    public string CurrentPassword { get; set; }
-
-    [Required]
-    [MinLength(6)]
-    public string NewPassword { get; set; }
-  }
 }

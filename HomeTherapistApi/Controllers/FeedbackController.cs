@@ -102,20 +102,20 @@ namespace HomeTherapistApi.Controllers
         Data = feedbacksWithOrder
       });
     }
+    public class FeedbackWithOrderDto
+    {
+      public Feedback Feedback { get; set; }
+      public Order Order { get; set; }
+      public List<OrderDetail> OrderDetails { get; set; }
+    }
+    public class FeedbackCreationDto
+    {
+      public string CustomerId { get; set; }
+      public string CustomerPhone { get; set; }
+      public DateTime? StartDt { get; set; }
+      public uint Rating { get; set; }
+      public string? Comments { get; set; }
+    }
+  }
 
-  }
-  public class FeedbackWithOrderDto
-  {
-    public Feedback Feedback { get; set; }
-    public Order Order { get; set; }
-    public List<OrderDetail> OrderDetails { get; set; }
-  }
-  public class FeedbackCreationDto
-  {
-    public string CustomerId { get; set; }
-    public string CustomerPhone { get; set; }
-    public DateTime? StartDt { get; set; }
-    public uint Rating { get; set; }
-    public string? Comments { get; set; }
-  }
 }

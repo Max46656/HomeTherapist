@@ -17,6 +17,10 @@ using HomeTherapistApi.Filters;
 using HomeTherapistApi.Services;
 using Newtonsoft.Json;
 using Microsoft.Extensions.FileProviders;
+using OpenTracing;
+using OpenTracing.Util;
+using Jaeger;
+using Jaeger.Samplers;
 
 #pragma warning disable CS8604
 // C: \Users\maxfr\.nuget\packages\microsoft.
@@ -160,8 +164,27 @@ builder.Services.AddSwaggerGen(c =>
   c.OperationFilter<SwaggerFileUploadFilter>();
 });
 
-
+builder.Services.AddOpenTracing();
 // Build the application.
+builder.Services.AddSingleton<ITracer>(serviceProvider =>
+{
+  string serviceName = "HomeTherapistAPI";
+  ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+  // 使用 Jaeger tracer
+  Jaeger.Configuration.SenderConfiguration.DefaultSenderResolver = new Jaeger.Senders.SenderResolver(loggerFactory)
+      // 將 ThrottlingLog 禁用以避免記憶體洩漏
+      .RegisterSenderFactory<Jaeger.Senders.Thrift.ThriftSenderFactory>();
+
+  ISampler sampler = new ConstSampler(sample: true);
+  ITracer tracer = new Tracer.Builder(serviceName)
+      .WithLoggerFactory(loggerFactory)
+      .WithSampler(sampler)
+      .Build();
+
+  GlobalTracer.Register(tracer);
+
+  return tracer;
+});
 var app = builder.Build();
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -182,9 +205,10 @@ if (app.Environment.IsDevelopment())
     c.EnableDeepLinking();
   });
 }
+app.UseSwaggerUI();
 app.UseRouting();
-// app.UseCors("AllowFrontend");
-app.UseCors("AllowAnyOrigin");
+app.UseCors("AllowFrontend");
+// app.UseCors("AllowAnyOrigin");
 
 app.UseHttpsRedirection();
 

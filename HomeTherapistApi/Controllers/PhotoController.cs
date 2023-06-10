@@ -26,22 +26,23 @@ namespace HomeTherapistApi.Controllers
     {
       _context = context;
     }
+
     [Authorize]
     [HttpPost("UploadProfileImage")]
     public async Task<ActionResult<ApiResponse<string>>> UploadProfileImage()
     {
       var userId = User.FindFirst("StaffId")?.Value;
       if (userId == null)
-        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請登入" });
+        return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "請登入" });
 
       var file = Request.Form.Files.FirstOrDefault();
       if (file == null)
-        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "請上傳圖片" });
+        return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "請上傳圖片" });
 
       // 檢查檔案類型
       var allowedFileTypes = new[] { "image/jpeg", "image/png", "image/jpg" };
       if (!allowedFileTypes.Contains(file.ContentType))
-        return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "無效的檔案格式" });
+        return BadRequest(new ApiResponse<string> { IsSuccess = false, Message = "無效的檔案格式" });
 
       // var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
       // var targetFolder = Path.Combine(currentDirectory, "ProfilePhoto");
@@ -72,7 +73,6 @@ namespace HomeTherapistApi.Controllers
         {
           await using (var stream = new FileStream(targetPath, FileMode.Create))
             await file.CopyToAsync(stream);
-
         }
       }
     }

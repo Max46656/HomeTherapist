@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using HomeTherapistApi.Models;
 using HomeTherapistApi.Utilities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -20,11 +21,11 @@ namespace HomeTherapistApi.Controllers
     }
 
     [HttpGet("GetAllServices")]
-    public ActionResult<ApiResponse<List<ServiceDto>>> GetAllServices()
+    public async Task<ActionResult<ApiResponse<List<ServiceDto>>>> GetAllServices()
     {
-      var services = _dbContext.Services
+      var services = await _dbContext.Services
           .Select(s => new ServiceDto { Id = s.Id, Name = s.Name, Price = s.Price })
-          .ToList();
+          .ToListAsync();
 
       return Ok(new ApiResponse<List<ServiceDto>>
       {
@@ -32,6 +33,7 @@ namespace HomeTherapistApi.Controllers
         Data = services
       });
     }
+
 
     [HttpGet("GetServicePrice/{serviceId}")]
     public ActionResult<ApiResponse<double?>> GetServicePrice(ulong serviceId)
@@ -43,12 +45,13 @@ namespace HomeTherapistApi.Controllers
 
       return Ok(new ApiResponse<double?> { IsSuccess = true, Data = service.Price });
     }
+    public class ServiceDto
+    {
+      public ulong Id { get; set; }
+      public string Name { get; set; }
+      public double Price { get; set; }
+    }
   }
-  public class ServiceDto
-  {
-    public ulong Id { get; set; }
-    public string Name { get; set; }
-    public double Price { get; set; }
-  }
+
 
 }
