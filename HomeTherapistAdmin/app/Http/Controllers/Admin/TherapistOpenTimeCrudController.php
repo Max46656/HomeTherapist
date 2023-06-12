@@ -33,11 +33,11 @@ class TherapistOpenTimeCrudController extends CrudController
         CRUD::setRoute(config('backpack.base.route_prefix') . '/therapist-open-time');
         CRUD::setEntityNameStrings('therapist open time', 'therapist open times');
         $this->crud->denyAccess(['create', 'update', 'delete']);
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
+        // $currentMonth = Carbon::now()->month;
+        // $currentYear = Carbon::now()->year;
 
-        $this->crud->addClause('whereMonth', 'start_dt', $currentMonth);
-        $this->crud->addClause('whereYear', 'start_dt', $currentYear);
+        // $this->crud->addClause('whereMonth', 'start_dt', $currentMonth);
+        // $this->crud->addClause('whereYear', 'start_dt', $currentYear);
 
         $this->crud->orderBy('start_dt', 'asc');
         $this->crud->orderBy('user_id', 'asc');

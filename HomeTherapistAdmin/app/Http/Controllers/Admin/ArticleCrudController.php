@@ -81,7 +81,7 @@ class ArticleCrudController extends CrudController
      */
     protected function setupCreateOperation()
     {
-        CRUD::setValidation(ArticleRequest::class);
+        CRUD::setValidation();
         CRUD::field('user_id');
         CRUD::field('title');
         CRUD::field('subtitle');
