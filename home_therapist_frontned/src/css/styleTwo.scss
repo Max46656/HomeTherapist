@@ -1,0 +1,138 @@
+@import "style";
+// OrderFeedback,profile, feedbackSummary.OrderSatate,MyOrder,userAppointment_sm,TherapistOpenTime_sm,TherapistServices_sm
+// UserArticles_sm,articleFrom,AvaliableDates,ConfirmAppointment
+%border {
+    border: 1px solid #426eff;
+}
+
+@mixin P-LR($padding) {
+    padding-left: $padding;
+    padding-right: $padding;
+}
+@mixin P-TB($padding) {
+    padding-top: $padding;
+    padding-bottom: $padding;
+}
+@mixin M-TB($marign) {
+    marign-top: $marign;
+    marign-bottom: $marign;
+}
+@mixin M-LR($marign) {
+    margin-left: $marign;
+    margin-right: $marign;
+}
+$mobile: 540px;
+@mixin breakpoint($point) {
+    @if $point == mobile {
+        @media screen and (max-width: $mobile) {
+            @content;
+        }
+    }
+}
+
+@include breakpoint(mobile) {
+    @for $i from 1 through 12 {
+        .col-tt-#{$i} {
+            width: (100%/12 * $i);
+            // border: 1px solid #ff1987;
+            @include P-LR(16px);
+        }
+    }
+}
+
+.feedback_sm{
+    @include breakpoint(mobile) {
+margin-bottom: 200px;
+// background-color: #426eff;
+
+    }
+    .feedback_sm_style {
+        @include breakpoint(mobile) {
+            @include P-LR(16px);
+            transform: translateY(-20px);
+        }
+    }
+}
+
+.order_sm_style {
+    @include breakpoint(mobile) {
+        padding-top: 50px;
+    }
+}
+.orderState_sm_style {
+    @include breakpoint(mobile) {
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+    .btn_sm_style {
+        @include breakpoint(mobile) {
+            padding-top: 20px;
+        }
+    }
+}
+.feedbackSU_style_sm {
+    @include breakpoint(mobile) {
+        @include P-TB(30px);
+    }
+    .feedbackSU_sm_mb {
+        @include breakpoint(mobile) {
+            margin: 15px 0;
+        }
+    }
+
+
+}
+.profile_sm_style {
+    @include breakpoint(mobile) {
+        @include P-TB(40px);
+    }
+
+    .profile_sm_style_flex {
+        @include breakpoint(mobile) {
+            display: flex;
+            //    justify-content: center;
+            margin: 20px auto;
+        }
+    }
+    .ggccccc {
+        @include breakpoint(mobile) {
+            @include M-LR(20px);
+        }
+    }
+}
+.userAppointment_sm,
+.TherapistOpenTime_sm,
+.TherapistServices_sm,
+.UserArticles_sm,.ConfirmAppointment_sm,
+.AvaliableDates_sm {
+    @include breakpoint(mobile) {
+        @include P-TB(40px);
+    }
+    .UserArticles_sm_style{
+    @include breakpoint(mobile){
+    margin-bottom: 20px;
+    }
+    }
+    
+    .AvaliableDates_sm_btn{
+    @include breakpoint(mobile){
+    margin-top: 20px;
+    }
+    }
+
+
+    
+}
+.article_style{
+    @include breakpoint(mobile){
+    @include P-TB(25px);
+   
+    }
+    .article_font{
+    @include breakpoint(mobile){
+    color: red;
+    font-size: 12px;
+    }
+    }
+
+}

@@ -1,0 +1,233 @@
+
+// about/home-component/login-component/CitySelection/ClientOrder
+$primay: #bafff2;
+$secondry: #69ffed;
+$secondry_dark: #4cfee9;
+$yellow: #fff566;
+$yellow-dark: #fadb14;
+$red: #ff4d4f;
+$red-dark: #f5222d;
+$black: #3d3c3c;
+$font_black: #625f5f;
+$bg_ligth_gray: #f5f3f3;
+
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat&family=Oswald:wght@500&display=swap');
+
+
+.color_1 {
+    background-color: #16f1d7;
+    box-shadow: rgba(7, 7, 7, 0.8);
+}
+.color_2 {
+    background-color: $secondry;
+
+    
+    &:hover {
+ 
+        background-color: $secondry;
+        box-shadow: 2px 5px 20px rgba(7, 7, 7, 0.8);
+        &:active {
+            background-color: $secondry_dark;
+            opacity: 0.8;
+            box-shadow: 1px 3px 10px rgba(7, 7, 7, 0.8);
+        }
+    }
+}
+.ddd{
+    // font-family: 'Caveat', cursive;
+    font-weight: 900;
+
+    font-family: 'Oswald', sans-serif;
+}
+.btn-common {
+    background-color: #16f1d7;
+    color: #f4f0f0;
+    text-shadow: #2f2e2e 2px 2px 2px;
+    &:hover {
+        background-color: #16f1d7;
+        box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.5);
+        color: #f4f0f0;
+        text-shadow: #989898 2px 2px 2px;
+    }
+}
+.small-edit {
+    background-color: $yellow;
+    &:hover {
+        background-color: $yellow-dark;
+    }
+}
+.small-del {
+    background-color: $red;
+    &:hover {
+        background-color: $red-dark;
+    }
+}
+.title_one {
+    color: aliceblue;
+    text-shadow: $black 5px 5px 10px;
+    opacity: 0;
+    transform: translateX(-200%);
+    animation: aa 1s both;
+}
+@keyframes aa {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.title_Btn {
+    
+    margin:0 5px;
+    transition: all 0.3s;
+    &:hover {
+        transform: translateY(-5px) scale(1.2);
+    }
+}
+.puls-e {
+    animation: pulse 1s 1s infinite;
+}
+
+.Navsize {
+    padding: 30px;
+}
+.serve_item {
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    color: $font_black;
+    opacity: 1;
+    border-bottom: 1px solid #ccc;
+    transform: translateY(30px);
+    animation: makeTop 1s 1.5s both;
+}
+.serve_content {
+    animation: makeTop 2s 1.5s both;
+}
+@keyframes makeTop {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.PositionMe {
+    top: 15%;
+
+    position: absolute;
+}
+
+.about_title {
+    color: $black;
+    letter-spacing: 10px;
+}
+
+.abount_content {
+    font-size: 15px;
+    text-align: justify;
+    line-height: 30px;
+    text-indent: 50px;
+    animation: makeTop 0.3s 1s both;
+}
+.about_introduce {
+    background-color: $bg_ligth_gray;
+}
+
+.clientOrde_flex {
+    width: 100%;
+
+    .clientOrde_style {
+        width: 100%;
+        margin: 10px auto;
+        display: flex;
+        justify-content: center;
+    }
+    .clientOrde_style2 {
+        width: 60%;
+    }
+    .clientOrde_btn_mr {
+        transform: translateX(85px);
+        margin-left: 20px;
+    }
+}
+@media screen and (max-width: 900px) {
+}
+@media screen and (max-width: 600px) {
+    .PositionMe {
+        position: relative;
+        margin: auto;
+
+        h2 {
+        }
+    }
+}
+@media screen and (max-width: 420px) {
+    .title_one {
+        color: $font_black;
+        text-shadow: none;
+    }
+
+    .home_sm_px,
+    .abount_content {
+        padding: 0 30px;
+    }
+    .abouy_sm_p {
+        padding-bottom: 30px;
+    }
+    .about_title {
+        letter-spacing: 5px;
+    }
+
+    .city_table {
+        width: 100%;
+        margin: 0 auto;
+        overflow: scroll;
+        padding: 0 10px;
+    }
+    .city_sm_col {
+        width: 75%;
+        margin: auto;
+    }
+
+    .clientOrde_sm {
+        button {
+            margin-left: 5px;
+        }
+    }
+
+    .clientOrde_flex {
+        .clientOrde_style2 {
+            width: 100%;
+            margin: 0 auto;
+            .clientOrde_from {
+                text-align: center;
+                width: 100%;
+                .sm_select {
+                    width: 40%;
+                }
+                .sm_age {
+                width: 27%;
+                margin-left: -10%;
+                }
+                .clientOrde_from_input {
+                    width: 70%;
+                }
+            }
+        }
+        .clientOrde_btn_mr {
+            transform: translateX(85px);
+            margin-left: 10px;
+
+            width: 32%;
+        }
+    }
+}
+
