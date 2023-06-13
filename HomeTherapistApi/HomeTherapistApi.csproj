@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jaeger" Version="1.0.3" />
-    <PackageReference Include="Jaeger.Senders.Thrift" Version="1.0.3" />
     <PackageReference Include="MailKit" Version="4.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="7.0.5" />
@@ -35,8 +33,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.0" />
     <PackageReference Include="MimeKit" Version="4.0.0" />
     <PackageReference Include="NetTopologySuite" Version="2.5.0" />
-    <PackageReference Include="OpenTracing" Version="0.12.1" />
-    <PackageReference Include="OpenTracing.Contrib.NetCore" Version="0.9.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.NetTopologySuite" Version="7.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />

@@ -8,6 +8,7 @@ using HomeTherapistApi.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using HomeTherapistApi.Utilities;
+using System.Diagnostics;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -165,7 +166,7 @@ namespace HomeTherapistApi.Controllers
       var random = new Random();
       var randomAppointment = availableAppointments[random.Next(availableAppointments.Count)];
 
-      return randomAppointment.Therapist.StaffId;
+      return randomAppointment.Therapist!.StaffId;
     }
     private static void ValidateInput(double? latitude, double? longitude, DateTime? date, string errorMessage)
     {
@@ -179,89 +180,98 @@ namespace HomeTherapistApi.Controllers
 
       return _therapistsInRange;
     }
-
-    // private async Task<List<User>> GetTherapistsInRange(double? latitude, double? longitude)
-    // {
-    //   const double EarthRadiusInKm = 6371.0;
-
-    //   var therapistsInRange = await _context.Users
-    //       .Where(user => user.Latitude != null && user.Longitude != null && user.Radius != null)
-    //       .ToListAsync();
-
-    //   var lat = latitude * Math.PI / 180.0;
-    //   var lon = longitude * Math.PI / 180.0;
-
-    //   therapistsInRange = therapistsInRange
-    //       .Where(user =>
-    //       {
-    //         var dLat = (double)user.Latitude!.Value * Math.PI / 180.0;
-    //         var dLon = (double)user.Longitude!.Value * Math.PI / 180.0;
-
-    //         var sdlat = Math.Sin((double)((dLat! - lat!) / 2));
-    //         var sdlon = Math.Sin((double)((dLon! - lon!) / 2));
-    //         var q = sdlat * sdlat + Math.Cos((double)lat!) * Math.Cos(dLat) * sdlon * sdlon;
-    //         var distance = 2 * EarthRadiusInKm * Math.Asin(Math.Sqrt(q));
-
-    //         return distance <= user.Radius!.Value / 3;
-    //       })
-    //       .ToList();
-
-    //   return therapistsInRange;
-    // }
-
     private async Task<List<User>> GetTherapistsInRange(double? latitude, double? longitude)
     {
-      // 不正確，但可以展示看起來更正確的結果
-      const double EarthRadiusInKm = 6371.0;
-      //以半正矢公式計算兩個經緯度之間的距離。
-      var therapistsInRange = await _context.Users
-          .Where(user => user.Latitude != null && user.Longitude != null && user.Radius != null)
-          .Where(user => (2 * EarthRadiusInKm * Math.Asin(Math.Sqrt(
-              Math.Pow(Math.Sin(((double)user.Latitude! - (double)latitude!) / 2), 2) +
-              Math.Cos((double)user.Latitude!) * Math.Cos((double)latitude) * Math.Pow(Math.Sin(((double)user.Longitude! - (double)longitude!) / 2), 2)
-          ))) <= user.Radius!.Value * 3)
-          .ToListAsync();
+      int batchSize = 1000;
+      int totalBatches = (int)Math.Ceiling((double)_context.Users.Count() / batchSize);
 
+      var therapistsInRange = new List<User>();
+
+      for (int i = 0; i < totalBatches; i++)
+      {
+        var usersBatch = await _context.Users
+            .Where(user => user.Latitude != null && user.Longitude != null && user.Radius != null)
+            .Skip(i * batchSize).Take(batchSize)
+            .ToListAsync();
+
+        therapistsInRange.AddRange(usersBatch.Where(user => Haversine((double)latitude!, (double)longitude!, (double)user.Latitude!, (double)user!.Longitude!) <= user.Radius!.Value));
+      }
       return therapistsInRange;
     }
+    private static double Haversine(double latitude1, double longitude1, double latitude2, double longitude2)
+    {
+      const double EarthRadiusInKm = 6378.1;
 
+      latitude1 = latitude1 * Math.PI / 180;
+      longitude1 = longitude1 * Math.PI / 180;
+      latitude2 = latitude2 * Math.PI / 180;
+      longitude2 = longitude2 * Math.PI / 180;
+
+      var sdlat = Math.Sin((latitude2 - latitude1) / 2);
+      var sdlon = Math.Sin((longitude2 - longitude1) / 2);
+      var q = sdlat * sdlat + Math.Cos(latitude1) * Math.Cos(latitude2) * sdlon * sdlon;
+      var d = 2 * EarthRadiusInKm * Math.Asin(Math.Sqrt(q));
+
+      return d;
+    }
+
+    [HttpGet("GetTherapistsInRange")]
+    public async Task<IActionResult> GetTherapistsInRangeTest([FromQuery] double? latitude, [FromQuery] double? longitude)
+    {
+      var therapistsInRange = await GetTherapistsInRange(latitude, longitude);
+      // return Ok(Haversine((double)latitude!, (double)longitude!, 25.0322863, 121.3884860));
+      return Ok(therapistsInRange);
+    }
     private async Task<List<DateTime>> GetAvailableDaysForTherapists(List<User> therapistsInRange, DateTime date)
     {
+      // var stopwatch = new Stopwatch();
+      // stopwatch.Start();
       var availableDays = new List<DateTime>();
+      var therapistIds = therapistsInRange.Select(t => t.StaffId).ToList();
 
       var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
       var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
 
-      foreach (var therapist in therapistsInRange)
-      {
-        var openDays = await GetOpenDaysForTherapist(therapist, firstDayOfMonth, lastDayOfMonth);
-        availableDays.AddRange(openDays);
-      }
-      return availableDays;
-    }
-    private async Task<List<DateTime>> GetOpenDaysForTherapist(User therapist, DateTime firstDayOfMonth, DateTime lastDayOfMonth)
-    {
-      var openDays = await _context.TherapistOpenTimes
-          .Where(time => time.UserId == therapist.StaffId && time.StartDt.HasValue && time.StartDt.Value.Date >= firstDayOfMonth && time.StartDt.Value.Date <= lastDayOfMonth)
-          .Select(time => time.StartDt!.Value.Date)
-          .Distinct()
-          .ToListAsync();
+      int batchSize = 5000;
+      int totalBatches = (int)Math.Ceiling((double)therapistIds.Count / batchSize);
 
-      var availableDays = new List<DateTime>();
-      foreach (var openDay in openDays)
+      for (int i = 0; i < totalBatches; i++)
       {
-        // 排除已被預約的日期
-        var overlappingAppointments = await _context.Appointments
-            .Where(a => a.UserId == therapist.StaffId && a.StartDt >= openDay && a.StartDt < openDay.AddDays(1))
+        var currentBatchIds = therapistIds.Skip(i * batchSize).Take(batchSize);
+
+        var openTimes = await _context.TherapistOpenTimes
+            .Where(time => currentBatchIds.Contains(time.UserId) && time.StartDt.HasValue && time.StartDt.Value.Date >= firstDayOfMonth && time.StartDt.Value.Date <= lastDayOfMonth)
             .ToListAsync();
 
-        if (!overlappingAppointments.Any())
-          availableDays.Add(openDay);
+        foreach (var therapist in therapistsInRange)
+        {
+          var therapistOpenTimes = openTimes.Where(time => time.UserId == therapist.StaffId).ToList();
+          var openDays = GetOpenDaysForTherapist(therapist, therapistOpenTimes);
+          availableDays.AddRange(openDays);
+        }
       }
-
+      // stopwatch.Stop();
+      // Console.WriteLine($"GetAvailableDaysForTherapists: {stopwatch.Elapsed.TotalMilliseconds} ms");
       return availableDays;
     }
-
+    private List<DateTime> GetOpenDaysForTherapist(User therapist, List<TherapistOpenTime> openTimes)
+    {
+      var availableDays = new List<DateTime>();
+      foreach (var openTime in openTimes)
+      {
+        if (openTime.StartDt.HasValue)
+        {
+          var openDay = openTime.StartDt.Value.Date;
+          // 排除已被預約的日期
+          var overlappingAppointments = _context.Appointments
+              .Where(a => a.UserId == therapist.StaffId && a.StartDt >= openDay && a.StartDt < openDay.AddDays(1))
+              .ToList();
+          if (!overlappingAppointments.Any())
+            availableDays.Add(openDay);
+        }
+      }
+      return availableDays;
+    }
     private async Task<List<AvailableAppointmentDto>> GetAvailableAppointmentsForTherapists(List<User> therapistsInRange, DateTime date)
     {
       var availableAppointments = new List<AvailableAppointmentDto>();

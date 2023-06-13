@@ -53,7 +53,12 @@ public partial class HometherapistContext : IdentityDbContext<User, Role, ulong>
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 
       => optionsBuilder.UseMySql(_configuration!.GetConnectionString("DefaultConnection"), ServerVersion.Parse("10.4.27-mariadb"), x => x.UseNetTopologySuite());
-
+  // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+  // {
+  //   optionsBuilder.UseMySql(_configuration!.GetConnectionString("DefaultConnection"), ServerVersion.Parse("10.4.27-mariadb"), x => x.UseNetTopologySuite());
+  //   optionsBuilder.EnableSensitiveDataLogging(false);
+  //   optionsBuilder.EnableDetailedErrors(false);
+  // }
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     modelBuilder

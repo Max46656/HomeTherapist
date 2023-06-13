@@ -14,7 +14,6 @@ using HomeTherapistApi.Utilities;
 using MimeKit;
 using System.Configuration;
 using MailKit.Net.Smtp;
-using OpenTracing;
 
 namespace HomeTherapistApi.Controllers
 {
@@ -27,15 +26,14 @@ namespace HomeTherapistApi.Controllers
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly IPasswordHasher<User> _passwordHasher;
-    private readonly ITracer _tracer;
 
-    public AuthController(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, IPasswordHasher<User> passwordHasher, ITracer tracer)
+
+    public AuthController(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, IPasswordHasher<User> passwordHasher)
     {
       _configuration = configuration;
       _userManager = userManager;
       _signInManager = signInManager;
       _passwordHasher = passwordHasher;
-      _tracer = tracer;
     }
 
     // 測試用Hash密碼生成
