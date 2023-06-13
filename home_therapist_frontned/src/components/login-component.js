@@ -3,6 +3,7 @@ import AuthService from "../services/auth.service";
 import { useNavigate } from "react-router-dom";
 import { LayoutMarTop } from "./style";
 
+
 const LoginComponent = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -23,17 +24,22 @@ const handleLogin = async () => {
     const user = { token: token };
     // console.log("handleLogin user.token", user.token);
     localStorage.setItem("user", JSON.stringify(user));
+
     // window.alert("登入成功，導入個人頁面");
     navigate("/my-appointment");
+    window.location.reload();
   } catch (error) {
     console.log(error);
   }
 };
 
   return (
-    <div style={{ padding: "3rem" }} className="col-md-12">
+    <div style={{ padding: "3rem" }} >
       <div>
         <LayoutMarTop />
+        <div className="container ">
+        <div className="row">
+
         <div className="form-group">
           <label htmlFor="username">電子信箱：</label>
           <input
@@ -63,6 +69,10 @@ const handleLogin = async () => {
           </button>
         </div>
       </div>
+        </div>
+
+        </div>
+
     </div>
   );
 };

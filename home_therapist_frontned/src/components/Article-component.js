@@ -1,205 +1,205 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-import { Button } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import "../css/style.css";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { notification, Button, Table, Modal, Form, Input } from "antd";
+import AuthService from "../services/auth.service";
+import { LayoutMarTop } from "./style";
+import { useNavigate } from "react-router-dom";
 
-const ArticleForm = () => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
+const UserArticles = () => {
   const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [form] = Form.useForm();
+  const [currentArticle, setCurrentArticle] = useState(null);
+ const navigate = useNavigate();
+  useEffect(() => {
+    fetchArticles();
+  }, []);
 
-  const handleTitleChange = (event) => {
-    setTitle(event.target.value);
-  };
+  const fetchArticles = async () => {
+    try {
+      setLoading(true);
+      const user = AuthService.getCurrentUser();
+      const token = user.token;
 
-  const handleContentChange = (event) => {
-    setContent(event.target.value);
-  };
+      const headers = {
+        Authorization: token,
+      };
 
-  const handleAuthorChange = (event) => {
-    setAuthor(event.target.value);
-  };
+      const response = await axios.get("https://localhost:5000/api/Articles/ByUser", { headers });
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    if (author.length < 2 || author.length > 15) {
-      console.log("内容必须3~15");
-      return;
+      if (response.data.isSuccess) {
+        setArticles(response.data.data);
+      } else {
+        notification.error({
+          message: response.data.message,
+          duration: 3,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      notification.error({
+        message: "Failed to fetch articles",
+        duration: 3,
+      });
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (title.length < 5 || title.length > 20) {
-      console.log("内容必须6~20");
-      return;
+  const handleEdit = (record) => {
+    form.setFieldsValue(record);
+    setCurrentArticle(record);
+    setVisible(true);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      setLoading(true);
+      const user = AuthService.getCurrentUser();
+      const token = user.token;
+
+      const headers = {
+        Authorization: token,
+      };
+
+      const response = await axios.delete(`https://localhost:5000/api/Articles/${id}`, { headers });
+
+      if (response.data.isSuccess) {
+        fetchArticles();
+      } else {
+        notification.error({
+          message: response.data.message,
+          duration: 3,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      notification.error({
+        message: "Failed to delete article",
+        duration: 3,
+      });
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (content.length < 3 || content.length > 250) {
-      console.log("内容必须4~249");
-      return;
+  const handleUpdate = async (values) => {
+    try {
+      setLoading(true);
+      const user = AuthService.getCurrentUser();
+      const token = user.token;
+
+      const headers = {
+        Authorization: token,
+      };
+
+      const response = await axios.put(`https://localhost:5000/api/Articles/${currentArticle.id}`, values, { headers });
+
+      if (response.data.isSuccess) {
+        fetchArticles();
+      } else {
+        notification.error({
+          message: response.data.message,
+          duration: 3,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      notification.error({
+        message: "Failed to update article",
+        duration: 3,
+      });
+    } finally {
+      setLoading(false);
+      setVisible(false);
+      form.resetFields();
     }
-
-    // 創建文章
-    const newArticle = {
-      id: Date.now(),
-      title: title.length > 15 ? title.substring(0, 15) + "..." : title,
-      content: content.length > 15 ? content.substring(0, 15) + "..." : content,
-      author,
-      publishedAt: new Date().toLocaleString()
-    };
-
-    setArticles([...articles, newArticle]);
-
-    setTitle("");
-    setContent("");
-    setAuthor("");
   };
 
-  const handleEdit = (id) => {
-    const Edit = articles.find((article) => article.id === id);
-    setTitle(Edit.title);
-    setContent(Edit.content);
-    setAuthor(Edit.author);
-  };
-
-  const handleDelete = (id) => {
-    const updatedArticles = articles.filter((article) => article.id !== id);
-    setArticles(updatedArticles);
-  };
+  const columns = [
+    {
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
+    },
+    {
+      title: "Subtitle",
+      dataIndex: "subtitle",
+      key: "subtitle",
+    },
+    {
+      title: "Actions",
+      dataIndex: "action",
+      render: (_, record) => (
+        <div>
+          <Button onClick={() => handleEdit(record)}>Edit</Button>
+          <Button onClick={() => handleDelete(record.id)}>Delete</Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div className="container vh-100 pt-5" style={{marginBottom:"200px"}} >
-      <FormFlex  onSubmit={handleSubmit}>
-        <input 
-          type="text"
-          placeholder="標題"
-          value={title}
-          onChange={handleTitleChange}
-          required
-        />
-        <input
-          type="text"
-          placeholder="作者姓名"
-          value={author}
-          onChange={handleAuthorChange}
-          required
-        />
-        <textarea
-          placeholder="請輸入内容，内容必须至少包含30個字符且不能超過250個字"
-          value={content}
-          onChange={handleContentChange}
-          required
-        />
-        <FromButton
-          style={{ marginLeft: "-40%", marginTop: "20px" }}
-          type="submit"
+    <div>
+      <LayoutMarTop />
+      <div className="container py-md-5 my-md-3 UserArticles_sm vh-100">
+    
+      <button className="btn color_2 mb-md-3 UserArticles_sm_style"  onClick={() => navigate("/:newArticle")}>新增文章</button>
+      <Table
+        dataSource={articles}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+      />
+      <Modal
+        title="Edit Article"
+        visible={visible}
+        onCancel={() => setVisible(false)}
+        onOk={() => {
+          form
+            .validateFields()
+            .then(values => {
+              form.resetFields();
+              handleUpdate(values);
+            })
+            .catch(info => {
+              console.log('Validate Failed:', info);
+            });
+        }}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          name="form_in_modal"
+          initialValues={{ modifier: 'public' }}
         >
-          提交
-        </FromButton>
-      </FormFlex>
-
-      <h5>已發布的文章</h5>
-      <div style={{ marginTop: "20px",border:"1px solid #ccc"}}>
-        <div
-          className="d-flex justify-content-between  p-2 "
-          style={{
-            backgroundColor: "#16f1d7",
-            padding: "20px"
-          }}
-        >
-          <div>作者</div>
-          <div>標題</div>
-          <div>內容</div>
-          <div>上架時間</div>
-          <div></div>
-        </div>
-        {articles.map((article) => (
-          <FlexStyle  key={article.id} >
-            <FromP>{article.author}</FromP>
-            <FromP>{article.title}</FromP>
-            <FromP>{article.content}</FromP>
-            <FromP>{article.publishedAt}</FromP>
-            <EditOutlined
-              className="btn small-edit rounded-0"
-              style={{
-                display: "block",
-                fontSize: "20px"
-              }}
-              onClick={() => handleEdit(article.id)}
-            />
-            <DeleteOutlined
-              className="btn small-del rounded-0"
-              style={{
-                display: "block",
-                fontSize: "20px",
-                
-              }}
-              onClick={() => handleDelete(article.id)}
-            />
-          </FlexStyle>
-        ))}
-      </div>
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[
+              {
+                required: true,
+                message: 'Please input the title of the article!',
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="subtitle"
+            label="Subtitle"
+          >
+            <Input type="textarea" />
+          </Form.Item>
+          <Form.Item name="body" label="Body">
+            <Input.TextArea />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
+        </div>
   );
 };
 
-export default ArticleForm;
-const FlexStyle = styled.div`
-  display: flex;
-  border: 1px solid #ccc;
-
-`;
-const FromP = styled.div`
-  width: 23%;
-  //   background-color: blue;
-  padding: 10px 2px;
-`;
-
-const FormFlex = styled.form`
-padding-top:80px;
-// background-color:red;
-display:flex;
-align-items: center;
-flex-direction: column;
-height:80vh;
-
-input{
-border:2px solid #06c1ab;
-box-shadow: 0px 5px 15px rgba(0,0,0,0.5);
-border-radius:2px;
-width:50%;
-padding:5px;
-margin:10px 0;
-
-}
-textarea{
-    border:2px solid #06c1ab;
-    box-shadow: 0px 5px 15px rgba(0,0,0,0.5);
-border-radius:2px;
-margin-top:10px;
-    width:50%;
-padding:5px;
-   height: 200px;
-    
-}
-
-
-}
-
-
-`;
-const FromButton = styled.button`
-  padding: 5px 30px;
-  border-radius: 5px;
-  border: 1px solid #06c1ab;
-  text-shadow: rgba(77, 77, 0, 0.8);
-  color: #06c1ab;
-
-  &:hover {
-    /* 悬停时的样式 */
-    background-color: #0e8a80;
-    box-shadow: rgba(0, 0, 0, 0.6);
-    color: #fff;
-  }
-`;
+export default UserArticles;

@@ -4,6 +4,9 @@ import { Table, message, Button } from 'antd';
 import AuthService from "../../services/auth.service";
 import { useNavigate } from "react-router-dom";
 import { LayoutMarTop } from '../style';
+import "../.././css/styleTwo.css";
+
+
 
 const MyOrder = () => {
   const [orders, setOrders] = useState([]);
@@ -23,8 +26,8 @@ const MyOrder = () => {
         setOrders(response.data.data.map(item => {
           return {
             ...item.order,
-            service: item.orderDetails[0].service.name,
-            note: item.orderDetails[0].note,
+            service: item.order.orderDetails[0].service.name,
+            note: item.order.orderDetails[0].note,
           }
         }));
       } else {
@@ -42,7 +45,12 @@ const MyOrder = () => {
     { title: '顧客性別', dataIndex: 'gender', key: 'gender' },
     { title: '顧客年齡層', dataIndex: 'ageGroup', key: 'ageGroup' },
     { title: '顧客自述', dataIndex: 'note', key: 'note' },
-    { title: '顧客已匯款', dataIndex: 'isComplete', key: 'isComplete' },
+     {
+      title: '顧客已匯款',
+      dataIndex: 'isComplete',
+      key: 'isComplete',
+      render: (isComplete) => (isComplete ? '是' : '否'),
+    },
   ];
 
   return (
@@ -55,6 +63,7 @@ const MyOrder = () => {
         rowKey="id"
       />
      <Button onClick={() => navigate("/OrderStats")}>訂單統計資訊</Button>
+     <Button onClick={() => navigate('/MyFeedback')}>我的評價</Button>
     </div>
   );
 };

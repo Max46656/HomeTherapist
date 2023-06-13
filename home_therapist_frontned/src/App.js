@@ -1,24 +1,27 @@
 import React from 'react';
 import { BrowserRouter, Route, Routes ,useParams } from "react-router-dom";
 import Layout from"./components/Layout";
-import HomeComponent from "./components/home-component";
+import HomeComponent from "./components/page/home-component";
 import RegisterComponent from "./components/register-component";
-import LoginComponent from "./components/login-component"
-import ItemComponent from "./components/item"
-import ClientOrder from "./components/ClientOrder"
-import AppointmentForm from './components/UserAppointments';
-import ArticleForm from "./components/Article-component";
-import ProfileAppoint from "./components/profile-Appoint";
+import LoginComponent from "./components/page/login-component"
+import ClientOrder from "./components/Client/ClientOrder"
+import OrderFeedback  from "./components/Client/OrderFeedback"
+import AppointmentForm from './components/page/UserAppointments';
+import UserArticles from "./components/page/Article-component";
+import ArticleForm from "./components/page/ArticleForm";
+import ArticleShow from "./components/page/ArticleShow";
+
 import ScrollToToP from "./components/scrollTop";
-import Profile from './components/profile';
-import OrderStats  from './components/Order/OrderStats';
-import MyOrder  from './components/Order/MyOrder';
-import TherapistOpenTime from './components/TherapistOpenTime';
-import TherapistServices from './components/TherapistServices';
+import Profile from './components/page/profile';
+import OrderStats  from './components/page/Order/OrderStats';
+import MyOrder  from './components/page/Order/MyOrder';
+import FeedbackSummary  from './components/page/Order/FeedbackSummary';
+import TherapistOpenTime from './components/page/TherapistOpenTime';
+import TherapistServices from './components/page/TherapistServices';
 import CitySelection from './components/AvailableAppointments/CitySelection';
 import AvailableDates from './components/AvailableAppointments/AvailableDates';
 import ConfirmAppointment from './components/AvailableAppointments/ConfirmAppointment';
-// import PPd from './components/pppd';
+import About from './components/page/about';
 
 function App() {
 
@@ -28,27 +31,31 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<HomeComponent />} />
+          {/* 取消註冊，商業理由 */}
           <Route path="register" element={<RegisterComponent />} />
           <Route path="login" element={<LoginComponent />} />
-          <Route path="/order" element={<ClientOrder />} />
-          <Route path="client/appointment" element={<AppointmentForm />} />
-          <Route path="my-appointment" element={<AppointmentForm />} />
-          <Route path="items/:ttt" element={< ItemComponent/>} />
-          <Route path="server/:article" element={<ArticleForm/>} />
-          <Route path="profile" element={<Profile/>} />
+          {/* 以下待排版 */}
+          <Route path="about" element={<About/>} />
           <Route path="city-selection" element={<CitySelection />} />
-          <Route path="available-dates" element={<AvailableDates />} />
-          <Route path="confirm-appointment" element={<ConfirmAppointment />} />
-          <Route path="therapist-open-time" element={<TherapistOpenTime />} />
-          <Route path="therapist-open-services" element={<TherapistServices />} />
+          <Route path="/order" element={<ClientOrder />} />
+          <Route path="client/feedback" element={<OrderFeedback />} />
           <Route path="/OrderStats" element={<OrderStats />} />
           <Route path="/MyOrder" element={<MyOrder />} />
+          <Route path="profile" element={<Profile/>} />
+          <Route path="MyFeedback" element={<FeedbackSummary />} />
+          <Route path="my-appointment" element={<AppointmentForm />} />
+          <Route path="therapist-open-time" element={<TherapistOpenTime />} />
+          <Route path="therapist-open-services" element={<TherapistServices />} />
+          <Route path="server/:article" element={<UserArticles/>} />
+          <Route path="/Articles" element={<ArticleForm/>} />
+          <Route path="Article/:id" element={<ArticleShow />} />
+          {/* <Route path="client/appointment" element={<AppointmentForm />} /> */}
+          <Route path="available-dates" element={<AvailableDates />} />
+          <Route path="confirm-appointment" element={<ConfirmAppointment />} />
 
-          />
 
-          <Route path="profile/:appoint" element={<ProfileAppoint/>} /> {/* 物理預約*/}
-          {/* <Route path="ppd" element={<PPd/>} />  */}
-          {/* 迦泓物理預約*/}
+
+
 
         </Route>
       </Routes>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Select } from 'antd';
+import { Form, Input, Button, Select, message } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useLocation } from 'react-router-dom';
 import { LayoutMarTop } from "../style";
+import "../.././css/styleTwo.css"
 
 const { Item } = Form;
 const { Option } = Select;
@@ -45,7 +46,7 @@ const ConfirmAppointment = () => {
       });
       console.log("https://localhost:5000" + res.data,response.data.data.user.userName)
     } else {
-      alert(response.data.message);
+      message.error(response.data.message);
     }
   };
 
@@ -59,6 +60,8 @@ const ConfirmAppointment = () => {
   return (
     <div>
       <LayoutMarTop />
+      <div className="container py-md-5 ConfirmAppointment_sm vh-100" >
+
      {therapistInfo !== null && appointment !== null ? (
         <div>
           <img src={therapistInfo.photoUrl} alt="Therapist" />
@@ -74,11 +77,11 @@ const ConfirmAppointment = () => {
           <p>請將此頁面截圖或紀錄下來，物理治療師將在近期與你聯絡!</p>
         </div>
       ) : (
-        <Form onFinish={handleSubmit} layout="vertical">
-          <Item label="您的ID" name="customerId" rules={[{ required: true }]}>
+        <Form className='py-md-5 row ' onFinish={handleSubmit} layout="vertical">
+          <Item className=''  label="您的ID" name="customerId" rules={[{ required: true }]}>
             <Input placeholder="您的身份證字號" />
           </Item>
-          <Item label="您的手機" name="customerPhone" rules={[{ required: true }]}>
+          <Item className='' label="您的手機" name="customerPhone" rules={[{ required: true }]}>
             <Input placeholder="您的手機" />
           </Item>
           <Item label="您的地址" name="customerAddress" rules={[{ required: true }]}>
@@ -107,12 +110,13 @@ const ConfirmAppointment = () => {
             <Input placeholder="備註" />
           </Item>
           <Item>
-            <Button type="primary" htmlType="submit">
+            <button className='btn color_2' type="primary" htmlType="submit">
               送出
-            </Button>
+            </button>
           </Item>
         </Form>
       )}
+      </div>
     </div>
   );
 };

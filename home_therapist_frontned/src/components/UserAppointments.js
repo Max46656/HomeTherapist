@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AuthService from '../services/auth.service';
 import { Calendar } from 'antd';
 import { LayoutMarTop } from "./style";
+import "../../src/css/styleTwo.css";
 
 
 const UserAppointments = () => {
@@ -46,13 +47,11 @@ const appointmentData = appointments.reduce((acc, appointment) => {
 
   return (
     <div>
-    <LayoutMarTop style={{marginBottom:"100px"}} />
+    <LayoutMarTop />
     <br>
 
     </br>
-    <div className="container ">
-
-      <h2 className='mb-5' >我的預約</h2>
+      <h2>我的預約</h2>
     <Calendar
   dateCellRender={(date) => {
     const dateString = new Date(date).toDateString();
@@ -68,7 +67,7 @@ const appointmentData = appointments.reduce((acc, appointment) => {
     <h3>預約詳細資料</h3>
     {selectedAppointment.map((appointment) => (
       <div key={appointment.id}>
-        {/* <p>預約服務：{appointment.}</p> */}
+        <p>顧客身份證字號：{appointment.customerId}</p>
         <p>顧客手機：{appointment.customerPhone}</p>
         <p>顧客地址：
           <a
@@ -85,7 +84,6 @@ const appointmentData = appointments.reduce((acc, appointment) => {
     ))}
   </div>
 )}
-    </div>
     </div>
   );
 };

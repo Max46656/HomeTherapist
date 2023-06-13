@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArcElement } from 'chart.js';
 import ChartJS from 'chart.js/auto';
 import { LayoutMarTop } from '../style';
+import "../.././css/styleTwo.css";
+
 
 ChartJS.register(ArcElement);
 
@@ -112,25 +114,20 @@ const OrderStats = () => {
 
   return (
     <div>
-      <LayoutMarTop  />
-      <div className="container mb-5">
-
-      <div className='mt-5 row ' style={{ display: 'flex', }}>
-        <div className='col-5 mx-auto mb-5'>
+      <LayoutMarTop />
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div>
           <Pie data={genderData}/>
         </div>
-        <div className="row d-flex justify-content-center ">
-        <div className='col-4'>
+        <div>
           <Line data={ageGroupData}  height={400}/>
         </div>
-        <div className='col-4'>
-         <Bar data={genderAndAgeData} options={{ indexAxis: 'y' }} height={500} width={600} />
-        </div>
-
+        <div>
+         <Bar data={genderAndAgeData} options={{ indexAxis: 'y' }} height={500} />
         </div>
       </div>
-        <Button className='btn-common' onClick={() => navigate('/MyOrder')}>我的訂單</Button>
-      </div>
+        <Button onClick={() => navigate('/MyOrder')}>我的訂單</Button>
+        <Button onClick={() => navigate('/MyFeedback')}>我的評價</Button>
     </div>
   );
 };
