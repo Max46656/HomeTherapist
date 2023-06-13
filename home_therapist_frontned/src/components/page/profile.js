@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { LayoutMarTop } from "../style";
 import AuthService from "../../services/auth.service";
 import { message } from "antd";
+import "../../css/styleTwo.css";
 
 const Profile = () => {
   const [userInfo, setUserInfo] = useState(null);

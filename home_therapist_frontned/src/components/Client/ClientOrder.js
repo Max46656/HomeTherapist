@@ -3,6 +3,7 @@ import axios from "axios";
 import Select from "react-select";
 import { LayoutMarTop } from "../style";
 import { message } from "antd";
+import "../../css/styleTwo.css";
 
 const ClientOrder = () => {
   const [appointments, setAppointments] = useState([]);
@@ -95,7 +96,7 @@ const ClientOrder = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = [
-      
+
       { op: "replace", path: "/CustomerId", value: form.CustomerId },
       { op: "replace", path: "/CustomerPhone", value: form.CustomerPhone },
       { op: "replace", path: "/CustomerAddress", value: form.CustomerAddress },
@@ -171,11 +172,11 @@ const ClientOrder = () => {
                             onChange={handleChange}
                             placeholder={appointment.customerId}
                           />
-                        
+
                       </div>
                       <div  className="col-12 my-2 ms-2 clientOrde_from">
                         <label className="ms-5 ">手機:</label>
-                
+
                           <input
                             className="ms-2 col-8 clientOrde_from_input"
                             type="text"
@@ -184,11 +185,11 @@ const ClientOrder = () => {
                             onChange={handleChange}
                             placeholder={appointment.customerPhone}
                           />
-                      
+
                       </div>
                       <div className="col-12 my-2 ms-2 clientOrde_from">
                         <label  className="ms-5">地址:</label>
-                     
+
                           <input
                          className="ms-2 col-8 clientOrde_from_input"
                             type="text"
@@ -197,13 +198,13 @@ const ClientOrder = () => {
                             onChange={handleChange}
                             placeholder={appointment.customerAddress}
                           />
-                      
+
                       </div>
                       <div  className="row my-2 ms-5 clientOrde_from ">
                         <label className="col-2   ">性別:     </label>
 
 
-                          <Select 
+                          <Select
                    className="col-3 me-2 sm_select"
                             name="Gender"
                             value={genderOptions.find(
@@ -216,14 +217,14 @@ const ClientOrder = () => {
                             placeholder={appointment.gender}
                           />
 
-                   
-                        
+
+
                       </div>
                       <div  className="row my-2 ms-5 clientOrde_from">
                         <label className="col-2 sm_age ">年齡區間:
 
                         </label>
-                          <Select 
+                          <Select
                           className="col-3 sm_select"
                             name="AgeGroup"
                             value={ageGroupOptions.find(
@@ -235,12 +236,12 @@ const ClientOrder = () => {
                             }
                             placeholder={appointment.ageGroup}
                           />
-               
-                     
+
+
                       </div>
                       <div  className="col-12  my-2 ms-3 clientOrde_from" >
                         <label>需求備註:</label>
-                        
+
                           <input
                           className="ms-2 col-6 clientOrde_from_input"
                             type="text"
@@ -251,7 +252,7 @@ const ClientOrder = () => {
                               appointment.appointmentDetails[0]?.note
                             }
                           />
-                        
+
                       </div>
                     </div>
                   </table>

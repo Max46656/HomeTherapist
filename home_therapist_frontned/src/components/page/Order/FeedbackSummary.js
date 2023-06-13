@@ -4,6 +4,7 @@ import { notification, Button, Table, InputNumber } from "antd";
 import AuthService from "../../../services/auth.service";
 import { LayoutMarTop } from "../../style";
 import { useNavigate } from "react-router-dom";
+import "../../../css/styleTwo.css";
 
 const FeedbackSummary = () => {
   const [averageRating, setAverageRating] = useState(null);
@@ -129,7 +130,7 @@ const FeedbackSummary = () => {
           </div>
           <Table
           className=""
-    
+
             dataSource={feedbacks}
             columns={columns}
             loading={loading}

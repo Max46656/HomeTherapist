@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseService from "../services/course.service";
+import "../../src/css/styleTwo.css";
 
 const EnrollComponent = (props) => {
   let { currentUser, setCurrentUser } = props;

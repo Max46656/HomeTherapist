@@ -4,6 +4,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { useLocation } from 'react-router-dom';
 import { LayoutMarTop } from "../style";
+import "../.././css/styleTwo.css"
 
 const { Item } = Form;
 const { Option } = Select;

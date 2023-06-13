@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { ArcElement } from "chart.js";
 import ChartJS from "chart.js/auto";
 import { LayoutMarTop } from "../../style";
+import "../../../css/styleTwo.css";
+
 
 ChartJS.register(ArcElement);
 

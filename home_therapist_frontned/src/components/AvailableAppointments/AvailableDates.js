@@ -9,6 +9,7 @@ import { LayoutMarTop } from "../style";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { useNavigate } from "react-router-dom";
+import "../.././css/styleTwo.css"
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -64,41 +65,47 @@ const AvailableDates = () => {
     return current && current < dayjs().endOf("day");
   };
 
-  const handleMonthChange = async (date) => {
-    try {
-      const selectedDateTime = new Date(date);
-      const year = selectedDateTime.getFullYear();
-      const month = (selectedDateTime.getMonth() + 1)
-        .toString()
-        .padStart(2, "0");
-      const day = selectedDateTime.getDate().toString().padStart(2, "0");
-      const hour = selectedDateTime.getHours().toString().padStart(2, "0");
-      const minute = selectedDateTime.getMinutes().toString().padStart(2, "0");
-      const second = selectedDateTime.getSeconds().toString().padStart(2, "0");
-      const startOfMonth = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+ const handleMonthChange = async (date) => {
+  try {
+    const selectedDateTime = new Date(date);
+    const year = selectedDateTime.getFullYear();
+    const month = (selectedDateTime.getMonth() + 1)
+      .toString()
+      .padStart(2, "0");
+    const day = selectedDateTime.getDate().toString().padStart(2, "0");
+    const hour = selectedDateTime.getHours().toString().padStart(2, "0");
+    const minute = selectedDateTime.getMinutes().toString().padStart(2, "0");
+    const second = selectedDateTime.getSeconds().toString().padStart(2, "0");
+    const startOfMonth = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 
-      const response = await axios.get(
-        "https://localhost:5000/api/AvailableAppointments/getAvailableDays",
-        {
-          params: {
-            latitude: latitude,
-            longitude: longitude,
-            serviceId: serviceId,
-            date: startOfMonth
-          }
+    const startTime = new Date();  // 記錄發出請求的時間
+
+    const response = await axios.get(
+      "https://localhost:5000/api/AvailableAppointments/getAvailableDays",
+      {
+        params: {
+          latitude: latitude,
+          longitude: longitude,
+          serviceId: serviceId,
+          date: startOfMonth
         }
-      );
-
-      if (response.data.isSuccess) {
-        setAvailableDays(response.data.data);
-      } else {
-        message.error("抓取可預約的日期失敗！");
       }
-    } catch (error) {
-      console.error(error);
-      message.error("發生錯誤，請稍後再試！");
+    );
+
+    const endTime = new Date();  // 記錄獲得回應的時間
+
+    if (response.data.isSuccess) {
+      console.log(response.data.data);
+      setAvailableDays(response.data.data);
+    } else {
+      message.error("抓取可預約的日期失敗！");
     }
-  };
+    console.log(`發出請求到獲得回應花了 ${endTime - startTime} 毫秒。`);  // 印出花費時間
+  } catch (error) {
+    console.error(error);
+    message.error("發生錯誤，請稍後再試！");
+  }
+};
 
   const handleDateSelect = async (date) => {
     setSelectedDate(date);

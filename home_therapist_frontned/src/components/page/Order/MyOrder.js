@@ -4,6 +4,8 @@ import { Table, message, Button } from "antd";
 import AuthService from "../../../services/auth.service";
 import { useNavigate } from "react-router-dom";
 import { LayoutMarTop } from "../../style";
+import "../../../css/styleTwo.css";
+
 
 const MyOrder = () => {
   const [orders, setOrders] = useState([]);

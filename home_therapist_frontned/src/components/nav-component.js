@@ -53,7 +53,7 @@ const Nav = () => {
                 </Link>
               </li>
               <li className=" nav-item title_Btn">
-                <Link className="nav-link" to="/newArticle">
+                <Link className="nav-link" to="/Articles">
                   文章
                 </Link>
               </li>

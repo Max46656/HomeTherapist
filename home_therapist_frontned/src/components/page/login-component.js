@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { LayoutMarTop } from "../style";
 import { Image } from "../style";
 import photo_6 from "../../image/photo-7.jpg";
+// import "../../src/css/styleTwo.css";
 
 
 const LoginComponent = () => {
@@ -41,7 +42,7 @@ const LoginComponent = () => {
         <div className="container my-5 ">
           <div className="row ">
             <div className="col-md-5">
-              <Image className="gggg" url={photo_6} height={480} />
+              <Image className="gggg" url={photo_6} height={350} />
             </div>
             <div className="col-md-7 mt-5">
               <div className="form-group">
@@ -75,7 +76,7 @@ const LoginComponent = () => {
             </div>
           </div>
         </div>
-      
+
     </div>
   );
 };

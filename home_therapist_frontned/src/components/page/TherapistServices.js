@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Table, Button, message } from 'antd';
 import AuthService from "../../services/auth.service";
 import { LayoutMarTop } from "../style";
+import "../../css/styleTwo.css";
 
 const TherapistServices = () => {
   const [services, setServices] = useState([]);

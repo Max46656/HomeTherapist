@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import AuthService from '../../services/auth.service';
+import AuthService from '../services/auth.service';
 import { Calendar } from 'antd';
-import { LayoutMarTop } from "../style";
-import "../../css/styleTwo.css";
+import { LayoutMarTop } from "./style";
+import "../../src/css/styleTwo.css";
 
 
 const UserAppointments = () => {
@@ -48,8 +48,9 @@ const appointmentData = appointments.reduce((acc, appointment) => {
   return (
     <div>
     <LayoutMarTop />
-    <div className="container py-md-5 my-md-3 userAppointment_sm">
+    <br>
 
+    </br>
       <h2>我的預約</h2>
     <Calendar
   dateCellRender={(date) => {
@@ -83,7 +84,6 @@ const appointmentData = appointments.reduce((acc, appointment) => {
     ))}
   </div>
 )}
-    </div>
     </div>
   );
 };

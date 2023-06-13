@@ -9,6 +9,7 @@ import { useMap } from "react-leaflet";
 // import { useHistory } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import areaData from "../data/areaData";
+import "../.././css/styleTwo.css"
 
 const { Option } = Select;
 
@@ -190,7 +191,7 @@ const CitySelection = () => {
       dataIndex: "id",
       key: "id",
       render: (id) => (
-        <Button 
+        <Button
           type={selectedService === id ? "primary" : "default"}
           onClick={() => handleServiceSelection(id)}
         >
@@ -200,7 +201,7 @@ const CitySelection = () => {
     }
   ];
   return (
-    <div className="p-0 m-0">
+    <div className="p-0 m-0 overflow-hidden">
       <LayoutMarTop />
       <div className="row d-flex justify-content-center flex-nowrap">
         <Form className="col-lg-9 col-md-10 ">

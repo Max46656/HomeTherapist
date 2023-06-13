@@ -1,8 +1,9 @@
-import React , { useState } 
+import React , { useState }
 from "react";
 import Map from "./Map";
 import AuthService from "../services/auth.service";
 import { Navigate, useNavigate } from "react-router-dom";
+import "../../src/css/styleTwo.css";
 
 import {LayoutMarTop} from "../components/style";
 
@@ -18,7 +19,7 @@ const RegisterComponent = () => {
 
   const handleUsername=(e)=>{
     setUsername(e.target.value);
-    
+
   }
   const handleEmail=(e)=>{
     setEmil(e.target.value);
@@ -34,7 +35,7 @@ const handleconfirm=(e)=>{
 const handleRegister=(e)=>{
   // AuthService.register(username,email,password)
   // .then(()=>{
- 
+
   window.alert("註冊成功,進入登入頁面");
   navigate("/login");
 
@@ -88,13 +89,13 @@ const handleRegister=(e)=>{
           />
         </div>
         <br />
-        <button 
-        onClick={handleRegister} 
+        <button
+        onClick={handleRegister}
         className="btn btn-primary">
           <span>註冊會員</span>
         </button>
       </div>
-    
+
     </div>
   );
 };

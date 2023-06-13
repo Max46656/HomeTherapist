@@ -104,7 +104,7 @@ margin-bottom: 200px;
 .TherapistOpenTime_sm,
 .TherapistServices_sm,
 .UserArticles_sm,.ConfirmAppointment_sm,
-.AvaliableDates_sm {
+.AvaliableDates_sm,.articleShow_sm {
     @include breakpoint(mobile) {
         @include P-TB(40px);
     }
@@ -113,25 +113,31 @@ margin-bottom: 200px;
     margin-bottom: 20px;
     }
     }
-    
+
     .AvaliableDates_sm_btn{
     @include breakpoint(mobile){
     margin-top: 20px;
     }
     }
+    .articleShow_sm_style{
+      @include breakpoint(mobile){
+        display: flex;
+        justify-content: center
+    }
+  }
 
 
-    
 }
 .article_style{
     @include breakpoint(mobile){
     @include P-TB(25px);
-   
+
+
     }
-    .article_font{
+    .article_btn {
     @include breakpoint(mobile){
-    color: red;
-    font-size: 12px;
+border: 1px soled #426eff;
+transform: translateX(65px);
     }
     }
 

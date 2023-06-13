@@ -5,13 +5,14 @@ import photo5 from "../../image/photo-5.jpg";
 import photo7 from "../../image/photo-7.jpg";
 import photo4 from "../../image/photo-4.jpg";
 import photo6 from "../../image/photo-6.jpg";
+import "../../css/styleTwo.css";
 
 
 
 const About = () => {
   return (
     <main className="overflow-hidden" >
-      
+
       <LayoutMarTop />
 
       <div className=" mb-5">
@@ -65,7 +66,7 @@ const About = () => {
         </div>
       </div>
       <LayoutMarTop />
-    
+
     </main>
   );
 };

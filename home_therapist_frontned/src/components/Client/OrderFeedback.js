@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import { LayoutMarTop } from "../style";
 import { Image } from "../style";
 import photo_5 from "../../image/photo-6.jpg";
+import "../../css/styleTwo.css";
 
 const OrderFeedback = () => {
   const [customerId, setCustomerId] = useState("");

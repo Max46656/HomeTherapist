@@ -7,9 +7,9 @@ import LoginComponent from "./components/page/login-component"
 import ClientOrder from "./components/Client/ClientOrder"
 import OrderFeedback  from "./components/Client/OrderFeedback"
 import AppointmentForm from './components/page/UserAppointments';
-import UserArticles from "./components/Article-component";
-import ArticleForm from "./components/ArticleForm";
-import ArticleShow from "./components/ArticleShow";
+import UserArticles from "./components/page/Article-component";
+import ArticleForm from "./components/page/ArticleForm";
+import ArticleShow from "./components/page/ArticleShow";
 
 import ScrollToToP from "./components/scrollTop";
 import Profile from './components/page/profile';
