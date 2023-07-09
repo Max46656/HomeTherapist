@@ -11,18 +11,29 @@ https://docs.google.com/document/d/1iEYVM3bneCK-o7rXufCNESzp40Y45UkxUx_6S7jaiS0/
 
 ## Installation
 Laravel
+
 copy .env.example .env
+
 php artisan key:generate
+
 composer install
+
 php artisan migrate
+
 php artisan db:seed
+
 php artisan serve
 
 Net.Core
+
 dotnet clean
+
 dotnet restore
+
 dotnet build
 
 React
+
 yarn install
+
 yarn start
